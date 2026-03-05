@@ -14,6 +14,7 @@ def main():
     print(f"Loading AI from {args.model}...")
     try:
         ai_agent = PPOAgent(args.model, device=args.device)
+        ai_agent.name = "AI"
     except FileNotFoundError:
         print(f"Error: Could not find model file {args.model}")
         sys.exit(1)
@@ -38,6 +39,16 @@ def main():
         print(f"\nGAME OVER! The winner is: {winner_name}")
     else:
         print("\nGAME OVER! It's a draw.")
+
+    ai_player = game.state.players[0]
+    alive_cards = [c.name for c in ai_player.cards]
+    revealed_cards = [c.name for c in ai_player.revealed]
+    print("\nAI's Final Cards:")
+    if alive_cards:
+        print(f"  Hidden (Unrevealed): {', '.join(alive_cards)}")
+    if revealed_cards:
+        print(f"  Revealed (Dead): {', '.join(revealed_cards)}")
+
 
 if __name__ == "__main__":
     main()
