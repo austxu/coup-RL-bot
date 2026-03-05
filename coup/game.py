@@ -481,7 +481,7 @@ class CoupGame:
 
         self.state.turn_number += 1
         self.log(f"\n--- Turn {self.state.turn_number}: P{player_idx} "
-                 f"({player.coins} coins) ---")
+                 f"({[c.value for c in player.cards]}, {player.coins} coins) ---")
 
         # 1. Agent chooses an action
         legal_actions = self.get_legal_actions(player_idx)

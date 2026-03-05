@@ -73,7 +73,7 @@ def run_simulation(agents_config, num_games: int = 1000,
         name = agents_config[i][0]
         w = wins.get(i, 0)
         pct = w / num_games * 100
-        bar = '█' * int(pct / 2)
+        bar = '#' * int(pct / 2)
         print(f"  P{i} ({name:>10}): {w:>5} wins ({pct:5.1f}%) {bar}")
 
     total_actions = sum(action_counts.values())
