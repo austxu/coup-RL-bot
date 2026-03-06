@@ -169,7 +169,8 @@ class CoupEnv(gym.Env):
         # Opponent claimed cards one-hot: 5 (NEW)
         # My caught bluff count: 1 (NEW)
         # Opponent caught bluff count: 1 (NEW)
-        self.observation_space = spaces.Box(low=0.0, high=10.0, shape=(35,), dtype=np.float32)
+        # Action History: 35 dims (5 actions * 7 dims each) (GEN 5)
+        self.observation_space = spaces.Box(low=0.0, high=10.0, shape=(70,), dtype=np.float32)
         
         self.opponent_cls = opponent_cls  # Set for evaluation, otherwise PBT Zoo handles opponent
         
@@ -256,7 +257,7 @@ class CoupEnv(gym.Env):
                 reward = 0.0
                 
             self.game_thread.join()
-            return np.zeros(35, dtype=np.float32), reward, True, False, {'action_mask': np.zeros(RLAction.SIZE, dtype=bool)}
+            return np.zeros(70, dtype=np.float32), reward, True, False, {'action_mask': np.zeros(RLAction.SIZE, dtype=bool)}
 
         # Otherwise, parse the game state request into a vector observation
         obs, action_mask = self._encode_state(msg)
@@ -267,7 +268,7 @@ class CoupEnv(gym.Env):
         view = msg['view']
         ctx = msg['context']
         
-        obs = np.zeros(35, dtype=np.float32)
+        obs = np.zeros(70, dtype=np.float32)
         mask = np.zeros(RLAction.SIZE, dtype=bool)
         
         # 0-4: My cards (one hot)
@@ -283,7 +284,9 @@ class CoupEnv(gym.Env):
         obs[6] = float(opp['coins'])
         obs[7] = float(opp['influence_count'])
         
-        # 8-12: Revealed cards
+        # 8-12: Revealed cards (Graveyard counting for BOTH players!)
+        for c in view.get('my_revealed', []):
+            obs[8 + cards_idx[c]] += 1.0
         for c in opp['revealed']:
             obs[8 + cards_idx[c]] += 1.0
             
@@ -315,6 +318,28 @@ class CoupEnv(gym.Env):
             pass
         elif req_type == 'CC' and isinstance(ctx, Card):
             obs[30 + cards_idx[ctx]] = 1.0
+
+        # 35-69: Action History Sequence (Last 5 actions)
+        # Each action is 7 dims: [ActionType ID (0-6), Actor (0=me, 1=opp), Target (0=me, 1=opp, -1=none), blocked, challenged, challenge_won, card_lost]
+        history = view.get('action_history', [])[-5:]
+        base_idx = 35
+        my_id = view['player_id']
+        for h in history:
+            act_id = float(ACT_TYPE_TO_RL.get(h['action'], 0))
+            actor = 0.0 if h['player'] == my_id else 1.0
+            
+            if h['target'] is None:
+                target = -1.0
+            else:
+                target = 0.0 if h['target'] == my_id else 1.0
+                
+            blocked = 1.0 if h.get('was_blocked') else 0.0
+            challenged = 1.0 if h.get('was_challenged') else 0.0
+            chall_won = 1.0 if h.get('challenge_won') else 0.0
+            card_lost = 1.0 if h.get('card_lost') else 0.0
+            
+            obs[base_idx:base_idx+7] = [act_id, actor, target, blocked, challenged, chall_won, card_lost]
+            base_idx += 7
 
         # Action Mask
         if req_type == 'ACT':
