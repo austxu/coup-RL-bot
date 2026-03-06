@@ -15,7 +15,7 @@ class HumanAgent(Agent):
         print(f"Your Coins: {view['my_coins']}")
         
         opp = view['opponents'][0]
-        print(f"Opponent {opp['player_id']}: {opp['influence_count']} influence, {opp['coins']} coins")
+        print(f"Opponent {opp['name']}: {opp['influence_count']} influence, {opp['coins']} coins")
         if opp['revealed']:
             print(f"Opponent's Revealed Cards: {[c.name for c in opp['revealed']]}")
         print("-" * 25)
@@ -37,14 +37,18 @@ class HumanAgent(Agent):
             print("Invalid selection.")
 
     def choose_challenge(self, view: dict, claimer_idx: int, claimed_card: Card) -> bool:
-        print(f"\nPlayer {claimer_idx} claims {claimed_card.name}.")
+        print(f"\n[Your current hand: {[c.name for c in view['my_cards']]}]")
+        name = view['opponents'][0]['name'] if view['opponents'][0]['player_id'] == claimer_idx else f"Player {claimer_idx}"
+        print(f"{name} claims {claimed_card.name}.")
         while True:
             choice = input("Challenge? (y/n): ").lower()
             if choice == 'y': return True
             if choice == 'n': return False
 
     def choose_counteraction(self, view: dict, actor_idx: int, action_type: ActionType, blocking_cards: List[Card]) -> Optional[Card]:
-        print(f"\nPlayer {actor_idx} is attempting {action_type.name}.")
+        print(f"\n[Your current hand: {[c.name for c in view['my_cards']]}]")
+        name = view['opponents'][0]['name'] if view['opponents'][0]['player_id'] == actor_idx else f"Player {actor_idx}"
+        print(f"{name} is attempting {action_type.name}.")
         print("You can block with:", [c.name for c in blocking_cards])
         while True:
             print("Available options:")
@@ -62,7 +66,9 @@ class HumanAgent(Agent):
             print("Invalid selection.")
 
     def choose_challenge_counter(self, view: dict, blocker_idx: int, blocking_card: Card) -> bool:
-        print(f"\nPlayer {blocker_idx} blocks with {blocking_card.name}.")
+        print(f"\n[Your current hand: {[c.name for c in view['my_cards']]}]")
+        name = view['opponents'][0]['name'] if view['opponents'][0]['player_id'] == blocker_idx else f"Player {blocker_idx}"
+        print(f"{name} blocks with {blocking_card.name}.")
         while True:
             choice = input("Challenge block? (y/n): ").lower()
             if choice == 'y': return True
