@@ -75,11 +75,8 @@ Because the tensors changed size, a brand new training script (`train_gen4.py`) 
 
 ## How to Run the AI
 
-### 1. Downloading the Weights
-Because the trained neural network models (`.pt` files) can become quite large, they are excluded from the GitHub repository to avoid bloat. When you clone this repository to a new computer, you will need to manually transfer the `ppo_model_gen4.pt` file over (e.g., via Google Drive, Dropbox, or a USB stick) and place it in the root `coup-cfr` directory alongside the scripts.
-
-### 2. Playing the Game
-Once the `.pt` file is placed in the folder, you can play against the Gen 4 AI by running:
+### Playing the Game
+Once you `git pull` or clone the repository on your new device, all the `.pt` model weights will download automatically. You can play against the Gen 4 AI immediately by running:
 ```bash
 python -m coup.human_cli --model ppo_model_gen4.pt
 ```
