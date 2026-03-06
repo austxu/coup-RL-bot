@@ -3,6 +3,7 @@ import sys
 from .game import CoupGame
 from .human_agent import HumanAgent
 from .ppo_agent import PPOAgent
+import random
 
 def main():
     parser = argparse.ArgumentParser(description="Play Coup against a trained PPO AI!")
@@ -26,9 +27,9 @@ def main():
     human_name = input("Enter your name: ") or "Human"
     human_agent = HumanAgent(name=human_name)
 
-    # Set up the game
-    # Sequence of players: AI is 0, Human is 1. (Will be randomized in game setup)
+    # Setup and randomize player order
     agents = [ai_agent, human_agent]
+    random.shuffle(agents)
     game = CoupGame(agents, num_players=2, verbose=True)
 
     print("\nStarting game! You are playing against the PPO AI.")
@@ -47,7 +48,8 @@ def main():
     else:
         print("\nGAME OVER! It's a draw.")
 
-    ai_player = game.state.players[0]
+    ai_idx = agents.index(ai_agent)
+    ai_player = game.state.players[ai_idx]
     alive_cards = [c.name for c in ai_player.cards]
     revealed_cards = [c.name for c in ai_player.revealed]
     print("\nAI's Final Cards:")
