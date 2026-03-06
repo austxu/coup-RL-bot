@@ -152,7 +152,7 @@ def ppo_update(model, optimizer, states, actions, old_log_probs, returns, advant
 
 def main():
     parser = argparse.ArgumentParser(description="Train Gen 5 Coup LSTM PPO with Self-Play")
-    parser.add_argument("--episodes", type=int, default=2000000)
+    parser.add_argument("--episodes", type=int, default=3500000)
     parser.add_argument("--rollout-size", type=int, default=200, help="Episodes per PPO update")
     parser.add_argument("--base-model", type=str, default="ppo_model_gen5_init.pt")
     parser.add_argument("--output", type=str, default="ppo_model_gen5.pt")
