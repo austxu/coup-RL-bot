@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coup Online - AI Showdown</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <header class="glass-panel">
+            <h1>COUP <span class="highlight">ONLINE</span></h1>
+            <div id="game-status">Waiting to Start...</div>
+        </header>
+
+        <div id="lobby-screen" class="screen active">
+            <div class="glass-panel lobby-panel">
+                <h2>Welcome to Coup</h2>
+                <p>Play against the trained PPO-AI bot.</p>
+                <input type="text" id="player-name" placeholder="Enter your name" value="Human" />
+                <button id="start-btn" class="btn primary-btn">Start Game</button>
+            </div>
+        </div>
+
+        <div id="game-screen" class="screen">
+            <div class="board">
+                <!-- Opponent Area -->
+                <div id="opponent-area" class="player-area opponent">
+                    <div class="player-info glass-panel">
+                        <h2 id="ai-name">PPO-AI</h2>
+                        <div class="stats">
+                            <span class="coin-stat"><span id="ai-coins">0</span> 🪙</span>
+                            <span class="influence-stat"><span id="ai-influence">2</span> 🎴</span>
+                        </div>
+                    </div>
+                    <div class="cards-container" id="ai-cards">
+                        <!-- AI Cards generated dynamically -->
+                    </div>
+                </div>
+
+                <!-- Action Feed and Prompts -->
+                <div id="center-area">
+                    <div id="action-feed-container" class="glass-panel">
+                        <h3>Action Log</h3>
+                        <div id="action-feed"></div>
+                    </div>
+                    <div id="prompt-container" class="glass-panel prompt-hidden">
+                        <h2 id="prompt-title">Prompt Title</h2>
+                        <div id="prompt-options">
+                            <!-- Options generated dynamically -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Player Area -->
+                <div id="player-area" class="player-area me">
+                    <div class="cards-container" id="my-cards">
+                        <!-- My Cards generated dynamically -->
+                    </div>
+                    <div class="player-info glass-panel">
+                        <h2 id="my-name">Player</h2>
+                        <div class="stats">
+                            <span class="coin-stat"><span id="my-coins">2</span> 🪙</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- Court deck info -->
+            <div id="deck-info" class="glass-panel">
+                Deck: <span id="deck-size">15</span>
+            </div>
+        </div>
+        
+        <div id="game-over-screen" class="screen glass-panel hidden">
+            <h1 id="win-message">Game Over</h1>
+            <div id="ai-reveal"></div>
+            <button id="rematch-btn" class="btn primary-btn" onclick="location.reload()">Play Again</button>
+        </div>
+        
+    </div>
+
+    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
