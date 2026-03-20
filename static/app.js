@@ -12,8 +12,36 @@ socket.on('disconnect', () => { gameStatus.innerText = 'Disconnected'; });
 let myIdx = 0;
 let aiIdx = 1;
 
+// Initialization
+let stats = JSON.parse(localStorage.getItem('coupStats')) || {wins: 0, losses: 0};
+let savedName = localStorage.getItem('coupPlayerName') || 'Human';
+document.getElementById('player-name').value = savedName;
+
+function updateLobbyStats() {
+    const statsDiv = document.getElementById('lobby-stats');
+    if (statsDiv) {
+        statsDiv.innerText = `Record - Wins: ${stats.wins} | Losses: ${stats.losses}`;
+    }
+}
+updateLobbyStats();
+
+// Add logic for Play Again button
+document.getElementById('rematch-btn').addEventListener('click', () => {
+    gameOverScreen.classList.add('hidden');
+    gameOverScreen.style.display = 'none';
+    gameScreen.classList.remove('active');
+    lobbyScreen.classList.add('active');
+    gameStatus.innerText = 'Ready';
+    
+    document.getElementById('my-cards').innerHTML = '';
+    document.getElementById('ai-cards').innerHTML = '';
+    document.getElementById('action-feed').innerHTML = '';
+    document.getElementById('ai-reveal').innerHTML = '';
+});
+
 document.getElementById('start-btn').addEventListener('click', () => {
     const name = document.getElementById('player-name').value || 'Human';
+    localStorage.setItem('coupPlayerName', name);
     socket.emit('start_game', { player_name: name });
     lobbyScreen.classList.remove('active');
     gameScreen.classList.add('active');
@@ -37,17 +65,30 @@ function renderView(view) {
 
     const myCards = document.getElementById('my-cards');
     myCards.innerHTML = '';
+    
+    // Helper to add click-to-zoom for any card
+    const applyZoom = (div, imgUrl) => {
+        div.onclick = function() {
+            document.getElementById('modal-img').src = imgUrl;
+            document.getElementById('card-modal').classList.remove('hidden');
+        };
+    };
+
     view.my_cards.forEach((cardName, idx) => {
         const div = document.createElement('div');
         div.className = 'card';
-        div.style.backgroundImage = `url(${getCardImageUrl(cardName)})`;
+        const imgUrl = getCardImageUrl(cardName);
+        div.style.backgroundImage = `url(${imgUrl})`;
+        applyZoom(div, imgUrl);
         myCards.appendChild(div);
     });
 
     view.my_revealed.forEach((cardName) => {
         const div = document.createElement('div');
         div.className = 'card revealed';
-        div.style.backgroundImage = `url(${getCardImageUrl(cardName)})`;
+        const imgUrl = getCardImageUrl(cardName);
+        div.style.backgroundImage = `url(${imgUrl})`;
+        applyZoom(div, imgUrl);
         myCards.appendChild(div);
     });
 
@@ -68,7 +109,15 @@ function renderView(view) {
         opp.revealed.forEach((cardName) => {
             const div = document.createElement('div');
             div.className = 'card revealed';
-            div.style.backgroundImage = `url(${getCardImageUrl(cardName)})`;
+            const imgUrl = getCardImageUrl(cardName);
+            div.style.backgroundImage = `url(${imgUrl})`;
+            
+            // Add zoom to revealed AI cards
+            div.onclick = function() {
+                document.getElementById('modal-img').src = imgUrl;
+                document.getElementById('card-modal').classList.remove('hidden');
+            };
+            
             aiCards.appendChild(div);
         });
     }
@@ -204,6 +253,14 @@ socket.on('game_over', (data) => {
     let msg = "It's a Draw";
     if (data.winner !== 'Draw') {
         msg = `${data.winner} Wins!`;
+        const myName = document.getElementById('player-name').value || 'Human';
+        if (data.winner === myName) {
+            stats.wins++;
+        } else {
+            stats.losses++;
+        }
+        localStorage.setItem('coupStats', JSON.stringify(stats));
+        updateLobbyStats();
     }
     document.getElementById('win-message').innerText = msg;
 
@@ -213,7 +270,12 @@ socket.on('game_over', (data) => {
         data.ai_final_cards.forEach(c => {
             const div = document.createElement('div');
             div.className = 'card';
-            div.style.backgroundImage = `url(${getCardImageUrl(c)})`;
+            const imgUrl = getCardImageUrl(c);
+            div.style.backgroundImage = `url(${imgUrl})`;
+            div.onclick = function() {
+                document.getElementById('modal-img').src = imgUrl;
+                document.getElementById('card-modal').classList.remove('hidden');
+            };
             rev.appendChild(div);
         });
     }
