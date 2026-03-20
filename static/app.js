@@ -12,36 +12,8 @@ socket.on('disconnect', () => { gameStatus.innerText = 'Disconnected'; });
 let myIdx = 0;
 let aiIdx = 1;
 
-// Initialization
-let stats = JSON.parse(localStorage.getItem('coupStats')) || {wins: 0, losses: 0};
-let savedName = localStorage.getItem('coupPlayerName') || 'Human';
-document.getElementById('player-name').value = savedName;
-
-function updateLobbyStats() {
-    const statsDiv = document.getElementById('lobby-stats');
-    if (statsDiv) {
-        statsDiv.innerText = `Record - Wins: ${stats.wins} | Losses: ${stats.losses}`;
-    }
-}
-updateLobbyStats();
-
-// Add logic for Play Again button
-document.getElementById('rematch-btn').addEventListener('click', () => {
-    gameOverScreen.classList.add('hidden');
-    gameOverScreen.style.display = 'none';
-    gameScreen.classList.remove('active');
-    lobbyScreen.classList.add('active');
-    gameStatus.innerText = 'Ready';
-    
-    document.getElementById('my-cards').innerHTML = '';
-    document.getElementById('ai-cards').innerHTML = '';
-    document.getElementById('action-feed').innerHTML = '';
-    document.getElementById('ai-reveal').innerHTML = '';
-});
-
 document.getElementById('start-btn').addEventListener('click', () => {
     const name = document.getElementById('player-name').value || 'Human';
-    localStorage.setItem('coupPlayerName', name);
     socket.emit('start_game', { player_name: name });
     lobbyScreen.classList.remove('active');
     gameScreen.classList.add('active');
@@ -54,15 +26,15 @@ socket.on('game_started', (data) => {
 });
 
 function getCardImageUrl(cardName) {
-    if (!cardName) return 'images/card_back.png';
-    return `images/${cardName.toLowerCase()}.png`;
+    if (!cardName) return 'images/card_back.png?v=2';
+    return `images/${cardName.toLowerCase()}.png?v=2`;
 }
 
 function renderView(view) {
     // 1. My Area
     document.getElementById('my-name').innerText = view.name;
     document.getElementById('my-coins').innerText = view.my_coins;
-    
+
     const myCards = document.getElementById('my-cards');
     myCards.innerHTML = '';
     view.my_cards.forEach((cardName, idx) => {
@@ -71,7 +43,7 @@ function renderView(view) {
         div.style.backgroundImage = `url(${getCardImageUrl(cardName)})`;
         myCards.appendChild(div);
     });
-    
+
     view.my_revealed.forEach((cardName) => {
         const div = document.createElement('div');
         div.className = 'card revealed';
@@ -85,10 +57,10 @@ function renderView(view) {
         document.getElementById('ai-name').innerText = opp.name;
         document.getElementById('ai-coins').innerText = opp.coins;
         document.getElementById('ai-influence').innerText = opp.influence_count;
-        
+
         const aiCards = document.getElementById('ai-cards');
         aiCards.innerHTML = '';
-        for(let i=0; i<opp.influence_count; i++) {
+        for (let i = 0; i < opp.influence_count; i++) {
             const div = document.createElement('div');
             div.className = 'card hidden';
             aiCards.appendChild(div);
@@ -103,7 +75,7 @@ function renderView(view) {
 
     // 3. Action Feed and Deck Info
     document.getElementById('deck-size').innerText = view.court_deck_size;
-    
+
     const feed = document.getElementById('action-feed');
     feed.innerHTML = '';
     const reversedHistory = [...view.action_history].reverse();
@@ -125,7 +97,7 @@ function renderView(view) {
 function showPrompt(title, optionsHTML) {
     document.getElementById('prompt-title').innerText = title;
     document.getElementById('prompt-options').innerHTML = optionsHTML;
-    
+
     const container = document.getElementById('prompt-container');
     container.classList.remove('prompt-hidden');
     container.classList.add('prompt-active');
@@ -137,7 +109,7 @@ function hidePrompt() {
     container.classList.add('prompt-hidden');
 }
 
-window.submitPrompt = function(data) {
+window.submitPrompt = function (data) {
     socket.emit('player_action', data);
     hidePrompt();
 };
@@ -148,7 +120,7 @@ const actionMap = {
         payload.legal_actions.forEach((a, i) => {
             let label = a.action_type;
             if (a.target_idx !== null && label !== "Income" && label !== "Foreign Aid" && label !== "Tax" && label !== "Exchange") {
-                label += ' (Target Opponent)'; 
+                label += ' (Target Opponent)';
             }
             html += `<button class="btn action-btn" onclick="submitPrompt({choice_index: ${i}})">${label}</button>`;
         });
@@ -194,15 +166,15 @@ const actionMap = {
     }
 };
 
-window.toggleExchange = function(idx) {
-    const el = document.getElementById('exc-'+idx);
+window.toggleExchange = function (idx) {
+    const el = document.getElementById('exc-' + idx);
     const selIdx = window._exchangeSelection.indexOf(idx);
-    if(selIdx > -1) {
+    if (selIdx > -1) {
         window._exchangeSelection.splice(selIdx, 1);
         el.style.border = "2px solid rgba(255,255,255,0.1)";
         el.style.transform = "scale(1)";
     } else {
-        if(window._exchangeSelection.length < window._exchangeTotal) {
+        if (window._exchangeSelection.length < window._exchangeTotal) {
             window._exchangeSelection.push(idx);
             el.style.border = "2px solid var(--primary)";
             el.style.transform = "scale(1.1)";
@@ -211,8 +183,8 @@ window.toggleExchange = function(idx) {
     document.getElementById('confirm-exch-btn').disabled = window._exchangeSelection.length !== window._exchangeTotal;
 };
 
-window.confirmExchange = function() {
-    submitPrompt({choice_indices: window._exchangeSelection});
+window.confirmExchange = function () {
+    submitPrompt({ choice_indices: window._exchangeSelection });
 };
 
 socket.on('game_prompt', (payload) => {
@@ -228,21 +200,13 @@ socket.on('game_over', (data) => {
     gameScreen.classList.remove('active');
     gameOverScreen.classList.remove('hidden');
     gameOverScreen.style.display = 'flex'; // override hidden 
-    
+
     let msg = "It's a Draw";
     if (data.winner !== 'Draw') {
         msg = `${data.winner} Wins!`;
-        const myName = document.getElementById('player-name').value || 'Human';
-        if (data.winner === myName) {
-            stats.wins++;
-        } else {
-            stats.losses++;
-        }
-        localStorage.setItem('coupStats', JSON.stringify(stats));
-        updateLobbyStats();
     }
     document.getElementById('win-message').innerText = msg;
-    
+
     if (data.ai_final_cards) {
         const rev = document.getElementById('ai-reveal');
         rev.innerHTML = '';
