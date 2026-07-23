@@ -12,15 +12,32 @@ class PPOAgent(Agent):
     An Agent wrapper that allows a trained PyTorch PPO model 
     to play natively via the CoupGame engine's Agent interface.
     """
-    def __init__(self, model_path: str, device: str = "cpu"):
+    def __init__(self, model_path: str, device: str = "cpu", model=None):
         self.device = torch.device(device)
-        self.model = CoupLSTMPPO(input_dim=70, hidden_dim=256, num_actions=15).to(self.device)
-        self.model.load_state_dict(torch.load(model_path, map_location=self.device))
+        if model is None:
+            model = CoupLSTMPPO(input_dim=70, hidden_dim=256, num_actions=15).to(self.device)
+            model.load_state_dict(torch.load(model_path, map_location=self.device))
+        self.model = model
         self.model.eval()
         
         # We use CoupEnv's encoding logic to process views
         self.env_helper = CoupEnv()
         self.hidden_state = self.model.reset_hidden(1, self.device)
+
+    def clone_for_game(self) -> "PPOAgent":
+        """Create a game-local wrapper while sharing the immutable model weights."""
+        return PPOAgent.from_model(self.model, self.device)
+
+    @classmethod
+    def from_model(cls, model, device):
+        agent = cls.__new__(cls)
+        agent.device = device
+        agent.model = model
+        agent.model.eval()
+        agent.env_helper = CoupEnv()
+        agent.hidden_state = agent.model.reset_hidden(1, agent.device)
+        agent.name = "PPO-AI"
+        return agent
         
     def _get_action_index(self, req_type: str, view: dict, legal_actions: List[Action] = None, context=None) -> int:
         msg = {'req_type': req_type, 'view': view, 'context': context}

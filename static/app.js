@@ -1,12 +1,50 @@
-const socket = io();
+const API_BASE = (window.COUP_API_BASE || '').replace(/\/+$/, '');
+const SOCKET_ORIGIN = API_BASE || window.location.origin;
+const socket = io(SOCKET_ORIGIN, { autoConnect: false, transports: ['websocket', 'polling'] });
 
 // UI Elements
 const lobbyScreen = document.getElementById('lobby-screen');
 const gameScreen = document.getElementById('game-screen');
 const gameOverScreen = document.getElementById('game-over-screen');
+const backendStatus = document.getElementById('backend-status');
+let backendReady = false;
 
-socket.on('connect', () => { console.log('Connected'); });
-socket.on('disconnect', () => { console.log('Disconnected'); });
+function setBackendStatus(message, state = '') {
+    if (backendStatus) {
+        backendStatus.innerText = message;
+        backendStatus.dataset.state = state;
+    }
+}
+
+async function waitForBackend() {
+    const delays = [0, 1200, 2500, 5000, 9000, 15000];
+    for (let attempt = 0; attempt < delays.length; attempt += 1) {
+        if (delays[attempt]) await new Promise(resolve => setTimeout(resolve, delays[attempt]));
+        setBackendStatus(attempt === 0 ? 'Waking the Gen5 bot…' : `Still waking the bot (attempt ${attempt + 1}/${delays.length})…`, 'warming');
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 12000);
+        try {
+            const response = await fetch(`${API_BASE}/health`, { signal: controller.signal, headers: { Accept: 'application/json' } });
+            if (!response.ok) throw new Error(`Health check returned ${response.status}`);
+            const payload = await response.json();
+            if (!payload.ready) throw new Error('Model is still initializing');
+            backendReady = true;
+            setBackendStatus('Bot ready. Start a Gen5 1v1 game.', 'ready');
+            socket.connect();
+            return true;
+        } catch (error) {
+            if (attempt === delays.length - 1) {
+                setBackendStatus('The bot is asleep or unavailable. Retry when ready.', 'error');
+            }
+        } finally {
+            clearTimeout(timeout);
+        }
+    }
+    return false;
+}
+
+socket.on('connect', () => { setBackendStatus('Bot connected. Ready for a game.', 'ready'); });
+socket.on('disconnect', () => { backendReady = false; setBackendStatus('Connection lost. The bot may be sleeping; retrying soon…', 'error'); });
 
 let myIdx = 0;
 let aiIdx = 1;
@@ -33,6 +71,7 @@ document.getElementById('clear-score-btn')?.addEventListener('click', () => {
 
 // Add logic for Play Again button
 document.getElementById('rematch-btn').addEventListener('click', () => {
+    if (!backendReady) { waitForBackend(); return; }
     gameOverScreen.classList.add('hidden');
     gameOverScreen.style.display = 'none';
     
@@ -46,6 +85,7 @@ document.getElementById('rematch-btn').addEventListener('click', () => {
 });
 
 document.getElementById('start-btn').addEventListener('click', () => {
+    if (!backendReady) { waitForBackend(); return; }
     const name = document.getElementById('player-name').value || 'Human';
     localStorage.setItem('coupPlayerName', name);
     socket.emit('start_game', { player_name: name });
@@ -287,5 +327,7 @@ socket.on('game_over', (data) => {
 });
 
 socket.on('game_error', (data) => {
-    alert("Error: " + data.error);
+    setBackendStatus(data.error || 'The game could not start.', 'error');
 });
+
+waitForBackend();
