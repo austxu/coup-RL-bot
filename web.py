@@ -83,7 +83,7 @@ def game_thread_worker(sid, web_agent):
         # Notify client of game start and identities
         socketio.emit('game_started', {
             'player_idx': agents.index(web_agent),
-            'ai_idx': agents.index(global_ai_agent)
+            'ai_idx': agents.index(ai_agent)
         }, room=sid)
         
         winner_idx = game.play_game()
