@@ -8,6 +8,8 @@ const gameScreen = document.getElementById('game-screen');
 const gameOverScreen = document.getElementById('game-over-screen');
 const backendStatus = document.getElementById('backend-status');
 let backendReady = false;
+let backendWakePromise = null;
+let pendingStart = null;
 
 function setBackendStatus(message, state = '') {
     if (backendStatus) {
@@ -16,7 +18,14 @@ function setBackendStatus(message, state = '') {
     }
 }
 
-async function waitForBackend() {
+function waitForBackend() {
+    if (backendReady) {
+        if (!socket.connected) socket.connect();
+        return Promise.resolve(true);
+    }
+    if (backendWakePromise) return backendWakePromise;
+
+    backendWakePromise = (async () => {
     const delays = [0, 1200, 2500, 5000, 9000, 15000];
     for (let attempt = 0; attempt < delays.length; attempt += 1) {
         if (delays[attempt]) await new Promise(resolve => setTimeout(resolve, delays[attempt]));
@@ -41,9 +50,19 @@ async function waitForBackend() {
         }
     }
     return false;
+    })();
+    backendWakePromise.finally(() => { backendWakePromise = null; });
+    return backendWakePromise;
 }
 
-socket.on('connect', () => { setBackendStatus('Bot connected. Ready for a game.', 'ready'); });
+socket.on('connect', () => {
+    setBackendStatus('Bot connected. Ready for a game.', 'ready');
+    if (pendingStart) {
+        const next = pendingStart;
+        pendingStart = null;
+        launchGame(next.name, next.rematch);
+    }
+});
 socket.on('disconnect', () => { backendReady = false; setBackendStatus('Connection lost. The bot may be sleeping; retrying soon…', 'error'); });
 
 let myIdx = 0;
@@ -69,9 +88,7 @@ document.getElementById('clear-score-btn')?.addEventListener('click', () => {
     updateStatsDisplay();
 });
 
-// Add logic for Play Again button
-document.getElementById('rematch-btn').addEventListener('click', () => {
-    if (!backendReady) { waitForBackend(); return; }
+function resetGameBoard() {
     gameOverScreen.classList.add('hidden');
     gameOverScreen.style.display = 'none';
     
@@ -79,18 +96,34 @@ document.getElementById('rematch-btn').addEventListener('click', () => {
     document.getElementById('ai-cards').innerHTML = '';
     document.getElementById('action-feed').innerHTML = '';
     document.getElementById('ai-reveal').innerHTML = '';
+}
 
-    const name = localStorage.getItem('coupPlayerName') || 'Human';
-    socket.emit('start_game', { player_name: name });
-});
-
-document.getElementById('start-btn').addEventListener('click', () => {
-    if (!backendReady) { waitForBackend(); return; }
-    const name = document.getElementById('player-name').value || 'Human';
+function launchGame(name, rematch = false) {
+    if (!backendReady || !socket.connected) {
+        pendingStart = { name, rematch };
+        setBackendStatus('Waking the Gen5 bot… your game will start automatically when it is ready.', 'warming');
+        void waitForBackend();
+        return;
+    }
     localStorage.setItem('coupPlayerName', name);
+    if (rematch) resetGameBoard();
     socket.emit('start_game', { player_name: name });
     lobbyScreen.classList.remove('active');
     gameScreen.classList.add('active');
+    gameOverScreen.classList.add('hidden');
+    gameOverScreen.style.display = 'none';
+}
+
+// Starting or rematching while the API is asleep now queues one game instead of requiring
+// the visitor to click twice after the health check finishes.
+document.getElementById('rematch-btn').addEventListener('click', () => {
+    const name = localStorage.getItem('coupPlayerName') || 'Human';
+    launchGame(name, true);
+});
+
+document.getElementById('start-btn').addEventListener('click', () => {
+    const name = document.getElementById('player-name').value || 'Human';
+    launchGame(name);
 });
 
 socket.on('game_started', (data) => {
