@@ -9,8 +9,10 @@ export function summaryLines(vm: MatchVM): string[] {
   const lines: string[] = [];
   const name = (i: number) => (i === vm.viewer ? 'You' : vm.seats[i].name);
   const other = (i: number) => (1 - i === vm.viewer ? 'you' : vm.seats[1 - i].name);
-  o.summaries.forEach((s: SeatSummary, i) => {
-    const you = i === vm.viewer;
+  // the bot's lines first: "PPO-AI bluffed 3 times; you caught 1."
+  const order = o.summaries.map((_, i) => i).sort((a, b) => Number(vm.seats[b].kind === 'bot') - Number(vm.seats[a].kind === 'bot'));
+  order.forEach((i) => {
+    const s: SeatSummary = o.summaries[i];
     if (s.bluffs === 0) lines.push(`${name(i)} never bluffed${s.claims ? ` (${s.claims} honest claim${s.claims === 1 ? '' : 's'})` : ''}.`);
     else
       lines.push(
@@ -20,7 +22,6 @@ export function summaryLines(vm: MatchVM): string[] {
       lines.push(
         `${name(i)} challenged ${s.challenges} time${s.challenges === 1 ? '' : 's'}, right ${s.challengesWon}.`,
       );
-    void you;
   });
   return lines;
 }

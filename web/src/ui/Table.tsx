@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'preact/hooks';
 import type { Match, MatchVM, SeatVM, Callout } from '../game/match';
 import { ART, ROLE_CLASS, pad2, pct } from '../game/labels';
 import { CardView } from './CardView';
@@ -179,6 +180,7 @@ function Seat({
   const losePrompt = vm.prompt && vm.prompt.k === 'lose' && vm.prompt.p === i ? vm.prompt : null;
   const callout = vm.callouts.find((c) => c.seat === i);
   const lastValue = [...vm.values].reverse().find((v) => v.seat === i);
+  const compact = useMedia('(max-width: 760px), (max-height: 560px)');
 
   return (
     <section
@@ -192,7 +194,7 @@ function Seat({
           {seat.kind === 'bot' ? (
             <Bear
               class="seat-bear"
-              size={pos === 'top' ? 84 : 84}
+              size={compact ? 60 : 84}
               base={botBase(vm, seat)}
               react={seat.react}
               reactKey={seat.reactKey}
@@ -278,6 +280,17 @@ function Seat({
       <div class="seat-callout">{callout && <CalloutBubble c={callout} vm={vm} />}</div>
     </section>
   );
+}
+
+function useMedia(q: string): boolean {
+  const [m, setM] = useState(() => typeof matchMedia === 'function' && matchMedia(q).matches);
+  useEffect(() => {
+    const mq = matchMedia(q);
+    const on = () => setM(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, [q]);
+  return m;
 }
 
 function botBase(vm: MatchVM, seat: SeatVM): BearMood {

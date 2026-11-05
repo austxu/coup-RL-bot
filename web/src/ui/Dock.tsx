@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { Match, MatchVM } from '../game/match';
 import type { ActionType, Card, Prompt } from '../engine/types';
-import { ACTIONS, ACTION_INFO, ROLE_CLASS } from '../game/labels';
+import { ACTIONS, ROLE_CLASS } from '../game/labels';
 import { CardView } from './CardView';
 import { Icon } from './Icon';
 
@@ -402,4 +402,3 @@ function ExchangePicker({ match, prompt }: { match: Match; prompt: Extract<Promp
   );
 }
 
-export const _ACTION_INFO = ACTION_INFO;

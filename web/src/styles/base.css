@@ -781,6 +781,11 @@ ol {
   .topbar .record .rec-streak {
     display: none;
   }
+}
+@media (max-width: 400px) {
+  .topbar .record {
+    display: none;
+  }
   .brand-name {
     font-size: 14px;
   }

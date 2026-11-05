@@ -3,7 +3,7 @@
 // records frames for the post-game replay.
 
 import { CoupGame } from '../engine/game';
-import { encodePrompt, exchangeHeuristic, rlToAnswer, RL, type ReqType } from '../engine/encode';
+import { encodePrompt, exchangeHeuristic, rlToAnswer, type ReqType } from '../engine/encode';
 import type { Answer, Card, GameEvent, Prompt } from '../engine/types';
 import { ACTION_CHARACTER } from '../engine/types';
 import type { BotClient } from '../bot/client';
@@ -397,9 +397,7 @@ export class Match {
       case 'act':
         return p.legal.every((a) => a.type === 'Coup') ? 'Forced to Coup (10+ coins)' : 'Choosing an action';
       case 'chl': {
-        const blk = this.game.state.history.at(-1);
         const isBlock = this.vm.callouts.some((c) => c.seat === p.claimer && c.kind === 'block');
-        void blk;
         return `Challenge ${this.isViewer(p.claimer) ? 'your' : `${this.name(p.claimer)}'s`} ${p.card}${isBlock ? ' block' : ''}?`;
       }
       case 'blk':
@@ -883,4 +881,3 @@ export class Match {
   }
 }
 
-export const RL_INDEX = RL;
