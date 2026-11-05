@@ -8,6 +8,7 @@ import { CoupGame } from '../src/engine/game';
 import { encodePrompt, exchangeHeuristic, rlToAnswer } from '../src/engine/encode';
 import type { Answer, Card, Prompt } from '../src/engine/types';
 import { CoupPolicy, maskedSoftmax, type Manifest } from '../src/bot/model';
+import { promptShape, snap } from './replay';
 
 const here = (p: string) => fileURLToPath(new URL(p, import.meta.url));
 const fixturePath = process.env.PARITY_FIXTURE ?? here('./fixtures/parity.json.gz');
@@ -15,44 +16,6 @@ const fixture = JSON.parse(gunzipSync(readFileSync(fixturePath)).toString());
 const manifest: Manifest = JSON.parse(readFileSync(here('../src/model/gen5.json'), 'utf8'));
 const bin = readFileSync(here('../src/model/gen5.bin'));
 const policy = new CoupPolicy(manifest, bin.buffer.slice(bin.byteOffset, bin.byteOffset + bin.byteLength));
-
-interface Snap {
-  turn: number;
-  cur: number;
-  deck: string[];
-  players: { coins: number; cards: string[]; revealed: string[]; claimed: string[]; caught: number }[];
-}
-
-function snap(g: CoupGame): Snap {
-  const s = g.state;
-  return {
-    turn: s.turn,
-    cur: s.current,
-    deck: [...s.deck],
-    players: s.players.map((p) => ({
-      coins: p.coins,
-      cards: [...p.cards],
-      revealed: [...p.revealed],
-      claimed: [...p.claimed].sort(),
-      caught: p.caught,
-    })),
-  };
-}
-
-function promptShape(p: Prompt): Record<string, unknown> {
-  switch (p.k) {
-    case 'act':
-      return { k: p.k, p: p.p, legal: p.legal.map((a) => [a.type, a.target]) };
-    case 'chl':
-      return { k: p.k, p: p.p, claimer: p.claimer, card: p.card };
-    case 'blk':
-      return { k: p.k, p: p.p, actor: p.actor, action: p.action, cards: p.cards };
-    case 'lose':
-      return { k: p.k, p: p.p };
-    case 'exch':
-      return { k: p.k, p: p.p, all: p.all, keep: p.keep };
-  }
-}
 
 const stats = { botDecisions: 0, maxLogit16: 0, maxValue16: 0, maxLogit32: 0, maxValue32: 0, maxTV32: 0, argmaxAgree32: 0 };
 

@@ -1,0 +1,146 @@
+{
+ "format": "coup-lstm-ppo/1",
+ "model": "gen7",
+ "source": "gen7_ckpt.pt",
+ "inputDim": 127,
+ "hiddenDim": 256,
+ "numActions": 15,
+ "numBelief": 20,
+ "byteLength": 1273488,
+ "sha256": "5062cfe8fa7304f9f54aca7870e90fb6cc04c97197406b7b6e7bd91dd9241e98",
+ "tensors": [
+  {
+   "name": "fc1.weight",
+   "shape": [
+    256,
+    127
+   ],
+   "dtype": "float16",
+   "offset": 0,
+   "length": 32512
+  },
+  {
+   "name": "fc1.bias",
+   "shape": [
+    256
+   ],
+   "dtype": "float32",
+   "offset": 65024,
+   "length": 256
+  },
+  {
+   "name": "fc2.weight",
+   "shape": [
+    256,
+    256
+   ],
+   "dtype": "float16",
+   "offset": 66048,
+   "length": 65536
+  },
+  {
+   "name": "fc2.bias",
+   "shape": [
+    256
+   ],
+   "dtype": "float32",
+   "offset": 197120,
+   "length": 256
+  },
+  {
+   "name": "lstm.weight_ih_l0",
+   "shape": [
+    1024,
+    256
+   ],
+   "dtype": "float16",
+   "offset": 198144,
+   "length": 262144
+  },
+  {
+   "name": "lstm.weight_hh_l0",
+   "shape": [
+    1024,
+    256
+   ],
+   "dtype": "float16",
+   "offset": 722432,
+   "length": 262144
+  },
+  {
+   "name": "lstm.bias_ih_l0",
+   "shape": [
+    1024
+   ],
+   "dtype": "float32",
+   "offset": 1246720,
+   "length": 1024
+  },
+  {
+   "name": "lstm.bias_hh_l0",
+   "shape": [
+    1024
+   ],
+   "dtype": "float32",
+   "offset": 1250816,
+   "length": 1024
+  },
+  {
+   "name": "actor.weight",
+   "shape": [
+    15,
+    256
+   ],
+   "dtype": "float16",
+   "offset": 1254912,
+   "length": 3840
+  },
+  {
+   "name": "actor.bias",
+   "shape": [
+    15
+   ],
+   "dtype": "float32",
+   "offset": 1262592,
+   "length": 15
+  },
+  {
+   "name": "critic.weight",
+   "shape": [
+    1,
+    256
+   ],
+   "dtype": "float16",
+   "offset": 1262652,
+   "length": 256
+  },
+  {
+   "name": "critic.bias",
+   "shape": [
+    1
+   ],
+   "dtype": "float32",
+   "offset": 1263164,
+   "length": 1
+  },
+  {
+   "name": "belief.weight",
+   "shape": [
+    20,
+    256
+   ],
+   "dtype": "float16",
+   "offset": 1263168,
+   "length": 5120
+  },
+  {
+   "name": "belief.bias",
+   "shape": [
+    20
+   ],
+   "dtype": "float32",
+   "offset": 1273408,
+   "length": 20
+  }
+ ]
+}

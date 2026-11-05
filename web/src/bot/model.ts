@@ -1,5 +1,7 @@
-// Forward pass of coup/ppo_model.py CoupLSTMPPO for a single step:
+// Forward pass for a single step of coup/ppo_model.py CoupLSTMPPO (Gen5) and
+// coup/gen7.py CoupGen7 (Gen7), chosen by the manifest:
 //   fc1 -> relu -> fc2 -> relu -> LSTM(256) -> actor logits, tanh(critic)
+//   [+ belief logits over the opponent's hand classes when the manifest has numBelief]
 // Weights come from tools/export_weights.py (float16 matrices, float32 biases).
 
 export interface TensorSpec {
@@ -12,9 +14,12 @@ export interface TensorSpec {
 
 export interface Manifest {
   format: string;
+  model?: string;
   inputDim: number;
   hiddenDim: number;
   numActions: number;
+  /** Gen7: number of belief classes (belief head present). */
+  numBelief?: number;
   byteLength: number;
   tensors: TensorSpec[];
 }
@@ -27,6 +32,8 @@ export interface LstmState {
 export interface StepOutput {
   logits: Float32Array;
   value: number;
+  /** Raw belief logits (models with a belief head only). */
+  belief?: Float32Array;
 }
 
 let halfTable: Float32Array | null = null;
@@ -63,6 +70,8 @@ export class CoupPolicy {
   readonly inputDim: number;
   readonly hidden: number;
   readonly numActions: number;
+  /** 0 when the model has no belief head (Gen5). */
+  readonly numBelief: number;
   private readonly w: Record<string, Float32Array> = {};
   // scratch buffers
   private readonly f1: Float32Array;
@@ -77,6 +86,11 @@ export class CoupPolicy {
     this.inputDim = manifest.inputDim;
     this.hidden = manifest.hiddenDim;
     this.numActions = manifest.numActions;
+    this.numBelief = manifest.numBelief ?? 0;
+    const need = ['fc1', 'fc2', 'actor', 'critic', ...(this.numBelief ? ['belief'] : [])]
+      .flatMap((n) => [`${n}.weight`, `${n}.bias`])
+      .concat(['lstm.weight_ih_l0', 'lstm.weight_hh_l0', 'lstm.bias_ih_l0', 'lstm.bias_hh_l0']);
+    for (const n of need) if (!this.w[n]) throw new Error(`weights: missing tensor ${n}`);
     this.f1 = new Float32Array(this.hidden);
     this.f2 = new Float32Array(this.hidden);
     this.gates = new Float32Array(4 * this.hidden);
@@ -122,7 +136,12 @@ export class CoupPolicy {
     dense(w['actor.weight'], w['actor.bias'], state.h, H, logits, this.numActions, false);
     const v = new Float32Array(1);
     dense(w['critic.weight'], w['critic.bias'], state.h, H, v, 1, false);
-    return { logits, value: Math.tanh(v[0]) };
+    const out: StepOutput = { logits, value: Math.tanh(v[0]) };
+    if (this.numBelief) {
+      out.belief = new Float32Array(this.numBelief);
+      dense(w['belief.weight'], w['belief.bias'], state.h, H, out.belief, this.numBelief, false);
+    }
+    return out;
   }
 }
 
@@ -156,6 +175,12 @@ export function maskedSoftmax(logits: ArrayLike<number>, mask: ArrayLike<number>
   }
   for (let i = 0; i < p.length; i++) p[i] /= z;
   return p;
+}
+
+/** Belief class probabilities: softmax over the classes in `bmask`; all zeros if none is possible. */
+export function beliefProbs(logits: ArrayLike<number>, bmask: ArrayLike<number>): Float64Array {
+  for (let i = 0; i < bmask.length; i++) if (bmask[i]) return maskedSoftmax(logits, bmask);
+  return new Float64Array(logits.length);
 }
 
 /** Sample an index from a probability vector with uniform draw u in [0, 1). */
