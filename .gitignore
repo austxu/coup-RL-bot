@@ -6,3 +6,7 @@ strategy.json
 .venv/
 node_modules/
 web/dist/
+versions/gen7/snapshots/
+versions/gen7/train_state.pt
+versions/gen7/learner_current.pt
+versions/gen7/train.out
