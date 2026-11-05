@@ -1,0 +1,126 @@
+{
+ "format": "coup-lstm-ppo/1",
+ "model": "gen5",
+ "source": "versions/gen5/ppo_model_gen5.pt",
+ "inputDim": 70,
+ "hiddenDim": 256,
+ "numActions": 15,
+ "byteLength": 1233984,
+ "sha256": "e801d3893b4110e350d2fb42d2b96cf5f2bf6261c638b9615869478b628c5da4",
+ "tensors": [
+  {
+   "name": "fc1.weight",
+   "shape": [
+    256,
+    70
+   ],
+   "dtype": "float16",
+   "offset": 0,
+   "length": 17920
+  },
+  {
+   "name": "fc1.bias",
+   "shape": [
+    256
+   ],
+   "dtype": "float32",
+   "offset": 35840,
+   "length": 256
+  },
+  {
+   "name": "fc2.weight",
+   "shape": [
+    256,
+    256
+   ],
+   "dtype": "float16",
+   "offset": 36864,
+   "length": 65536
+  },
+  {
+   "name": "fc2.bias",
+   "shape": [
+    256
+   ],
+   "dtype": "float32",
+   "offset": 167936,
+   "length": 256
+  },
+  {
+   "name": "lstm.weight_ih_l0",
+   "shape": [
+    1024,
+    256
+   ],
+   "dtype": "float16",
+   "offset": 168960,
+   "length": 262144
+  },
+  {
+   "name": "lstm.weight_hh_l0",
+   "shape": [
+    1024,
+    256
+   ],
+   "dtype": "float16",
+   "offset": 693248,
+   "length": 262144
+  },
+  {
+   "name": "lstm.bias_ih_l0",
+   "shape": [
+    1024
+   ],
+   "dtype": "float32",
+   "offset": 1217536,
+   "length": 1024
+  },
+  {
+   "name": "lstm.bias_hh_l0",
+   "shape": [
+    1024
+   ],
+   "dtype": "float32",
+   "offset": 1221632,
+   "length": 1024
+  },
+  {
+   "name": "actor.weight",
+   "shape": [
+    15,
+    256
+   ],
+   "dtype": "float16",
+   "offset": 1225728,
+   "length": 3840
+  },
+  {
+   "name": "actor.bias",
+   "shape": [
+    15
+   ],
+   "dtype": "float32",
+   "offset": 1233408,
+   "length": 15
+  },
+  {
+   "name": "critic.weight",
+   "shape": [
+    1,
+    256
+   ],
+   "dtype": "float16",
+   "offset": 1233468,
+   "length": 256
+  },
+  {
+   "name": "critic.bias",
+   "shape": [
+    1
+   ],
+   "dtype": "float32",
+   "offset": 1233980,
+   "length": 1
+  }
+ ]
+}

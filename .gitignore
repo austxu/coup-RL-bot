@@ -3,3 +3,6 @@ __pycache__/
 .DS_Store
 strategy.json
 .wrangler/
+.venv/
+node_modules/
+web/dist/
