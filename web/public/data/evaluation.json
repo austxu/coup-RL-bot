@@ -1,0 +1,139 @@
+{
+ "asOf": "2026-11-05",
+ "model": "gen5",
+ "policy": "Samples from the masked softmax (as deployed), fresh LSTM state each game.",
+ "engine": "coup/game.py, 1v1; seats alternate every game; seeded per game.",
+ "metric": "winRate = Gen5 wins / games; ci95 is the 95% Wilson score interval; draws (500-turn cap) count as non-wins. avgTurns counts both players' turns.",
+ "games": 40000,
+ "gamesPerOpponent": 5000,
+ "opponents": [
+  {
+   "id": "random",
+   "label": "Uniform random",
+   "description": "RandomAgent: uniformly random legal actions; challenges 15%, blocks 25% of the time.",
+   "games": 5000,
+   "wins": 4528,
+   "losses": 472,
+   "draws": 0,
+   "winRate": 0.9056,
+   "ci95": [
+    0.8972,
+    0.9134
+   ],
+   "avgTurns": 9.46,
+   "seconds": 131.4
+  },
+  {
+   "id": "zoo",
+   "label": "Random zoo profiles",
+   "description": "ZooAgent.random_profile(): a fresh scripted personality each game (bluff, challenge, block and income rates drawn uniformly). 15% of Gen5's training games.",
+   "games": 5000,
+   "wins": 4418,
+   "losses": 582,
+   "draws": 0,
+   "winRate": 0.8836,
+   "ci95": [
+    0.8744,
+    0.8922
+   ],
+   "avgTurns": 7.66,
+   "seconds": 110.0
+  },
+  {
+   "id": "heuristic",
+   "label": "Rule-based heuristic",
+   "description": "HeuristicAgent: never bluffs, always blocks when it holds the card, challenges with two copies. 10% of Gen5's training games.",
+   "games": 5000,
+   "wins": 4586,
+   "losses": 414,
+   "draws": 0,
+   "winRate": 0.9172,
+   "ci95": [
+    0.9092,
+    0.9245
+   ],
+   "avgTurns": 13.25,
+   "seconds": 155.1
+  },
+  {
+   "id": "cfr",
+   "label": "CFR (MCCFR, 5M iterations)",
+   "description": "CFRAgent with versions/gen1-4/strategy_5m.json; abstracted info sets, uniform on unseen sets.",
+   "games": 5000,
+   "wins": 4239,
+   "losses": 761,
+   "draws": 0,
+   "winRate": 0.8478,
+   "ci95": [
+    0.8376,
+    0.8575
+   ],
+   "avgTurns": 7.55,
+   "seconds": 89.3
+  },
+  {
+   "id": "gen1",
+   "label": "PPO Gen 1",
+   "description": "23-dim observation, LSTM 64, trained vs zoo profiles.",
+   "games": 5000,
+   "wins": 4035,
+   "losses": 965,
+   "draws": 0,
+   "winRate": 0.807,
+   "ci95": [
+    0.7958,
+    0.8177
+   ],
+   "avgTurns": 10.56,
+   "seconds": 155.9
+  },
+  {
+   "id": "gen2",
+   "label": "PPO Gen 2",
+   "description": "Gen 1 fine-tuned vs zoo + heuristic.",
+   "games": 5000,
+   "wins": 3886,
+   "losses": 1114,
+   "draws": 0,
+   "winRate": 0.7772,
+   "ci95": [
+    0.7655,
+    0.7885
+   ],
+   "avgTurns": 9.28,
+   "seconds": 150.3
+  },
+  {
+   "id": "gen3",
+   "label": "PPO Gen 3",
+   "description": "23-dim observation, 1M episodes of self-play.",
+   "games": 5000,
+   "wins": 2114,
+   "losses": 2886,
+   "draws": 0,
+   "winRate": 0.4228,
+   "ci95": [
+    0.4092,
+    0.4365
+   ],
+   "avgTurns": 9.2,
+   "seconds": 149.1
+  },
+  {
+   "id": "gen4",
+   "label": "PPO Gen 4",
+   "description": "35-dim observation with claim / caught-bluff memory.",
+   "games": 5000,
+   "wins": 3665,
+   "losses": 1335,
+   "draws": 0,
+   "winRate": 0.733,
+   "ci95": [
+    0.7206,
+    0.7451
+   ],
+   "avgTurns": 7.43,
+   "seconds": 138.4
+  }
+ ]
+}

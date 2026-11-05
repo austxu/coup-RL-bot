@@ -1,0 +1,23 @@
+# Cloudflare Pages headers
+# Vite fingerprints everything under /assets (JS, CSS, fonts, card art,
+# bear atlas and the gen5 weights), so it can be cached forever.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+/images/*
+  Cache-Control: public, max-age=604800
+
+/data/*
+  Cache-Control: public, max-age=3600
+  Access-Control-Allow-Origin: *
+
+/
+  Cache-Control: no-cache
+
+/index.html
+  Cache-Control: no-cache
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
