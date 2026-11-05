@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'preact/hooks';
 import type { MatchVM, MindEntry } from '../game/match';
 import { ROLE_CLASS, pct } from '../game/labels';
 import { Icon } from './Icon';
+import { BeliefPanel } from './Belief';
 
 const SERIES = ['var(--accent)', 'var(--blue)'];
 
@@ -102,7 +103,9 @@ export function MindPanel({ vm }: { vm: MatchVM }) {
         <span class="eyebrow" id="mind-h">
           02 / bot's mind
         </span>
-        <span class="panel-meta">gen5 ppo · lstm 256</span>
+        <span class="panel-meta">
+          {[...new Set(bots.map((b) => vm.seats[b].model))].join(' vs ')} · lstm 256
+        </span>
       </header>
 
       <div class="winest">
@@ -155,6 +158,8 @@ export function MindPanel({ vm }: { vm: MatchVM }) {
           critic value (v+1)/2 after each decision · dashed line = 50%
         </span>
       </div>
+
+      <BeliefPanel vm={vm} />
 
       <div class="decision" aria-live="polite">
         {last ? (

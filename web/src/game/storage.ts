@@ -1,3 +1,4 @@
+import type { ModelId } from '../bot/protocol';
 // Local record + name. Keys match the previous Socket.IO frontend so existing
 // visitors keep their W/L. Every access is guarded: storage can throw.
 const STATS_KEY = 'coupStats';
@@ -57,5 +58,23 @@ export function saveName(name: string) {
     localStorage.setItem(NAME_KEY, name);
   } catch {
     /* ignore */
+  }
+}
+
+const MODEL_KEY = 'coup.model';
+
+export function loadModel(): ModelId {
+  try {
+    return localStorage.getItem(MODEL_KEY) === 'gen5' ? 'gen5' : 'gen7';
+  } catch {
+    return 'gen7';
+  }
+}
+
+export function saveModel(m: ModelId) {
+  try {
+    localStorage.setItem(MODEL_KEY, m);
+  } catch {
+    /* private mode */
   }
 }

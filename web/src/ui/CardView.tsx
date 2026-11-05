@@ -1,5 +1,27 @@
 import type { Card } from '../engine/types';
 import { ART, BEAR, ROLE_CLASS } from '../game/labels';
+import { prefersReducedMotion } from '../game/timing';
+
+/** Pointer-driven tilt + specular highlight for face-up cards (fine pointers only). */
+function tilt(e: PointerEvent) {
+  if (e.pointerType !== 'mouse' || prefersReducedMotion()) return;
+  const el = e.currentTarget as HTMLElement;
+  if (!el.classList.contains('is-up') || el.classList.contains('is-dead')) return;
+  const r = el.getBoundingClientRect();
+  const x = (e.clientX - r.left) / r.width;
+  const y = (e.clientY - r.top) / r.height;
+  el.style.setProperty('--rx', `${((0.5 - y) * 16).toFixed(2)}deg`);
+  el.style.setProperty('--ry', `${((x - 0.5) * 18).toFixed(2)}deg`);
+  el.style.setProperty('--mx', `${(x * 100).toFixed(1)}%`);
+  el.style.setProperty('--my', `${(y * 100).toFixed(1)}%`);
+  el.classList.add('is-tilting');
+}
+function untilt(e: PointerEvent) {
+  const el = e.currentTarget as HTMLElement;
+  el.classList.remove('is-tilting');
+  el.style.removeProperty('--rx');
+  el.style.removeProperty('--ry');
+}
 
 export interface CardViewProps {
   /** The face to show, or null when the viewer may not see it (never rendered). */
@@ -38,7 +60,9 @@ export function CardView(p: CardViewProps) {
     <>
       <span class="card-inner">
         <span class="card-face card-back" aria-hidden="true">
+          <span class="card-back-art" />
           <img src={BEAR.sm} alt="" draggable={false} />
+          <span class="card-shade" />
         </span>
         <span class="card-face card-front" aria-hidden="true">
           {p.card && (
@@ -51,6 +75,9 @@ export function CardView(p: CardViewProps) {
               decoding="async"
             />
           )}
+          <span class="card-light" />
+          <span class="card-glint" />
+          <span class="card-shade" />
         </span>
       </span>
       {p.dead && <span class="card-dead" aria-hidden="true" />}
@@ -65,6 +92,8 @@ export function CardView(p: CardViewProps) {
         class={cls}
         data-anchor={p.anchor}
         onClick={p.onClick}
+        onPointerMove={tilt}
+        onPointerLeave={untilt}
         aria-label={label}
         aria-pressed={p.selectable ? !!p.selected : undefined}
       >
@@ -73,7 +102,7 @@ export function CardView(p: CardViewProps) {
     );
   }
   return (
-    <span class={cls} data-anchor={p.anchor} role="img" aria-label={label}>
+    <span class={cls} data-anchor={p.anchor} role="img" aria-label={label} onPointerMove={tilt} onPointerLeave={untilt}>
       {body}
     </span>
   );

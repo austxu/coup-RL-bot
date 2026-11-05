@@ -3,7 +3,8 @@ import type { ComponentChildren } from 'preact';
 import type { BotClient } from '../bot/client';
 import { Match, type Outcome, type SeatConfig } from '../game/match';
 import { useStore } from '../game/store';
-import { applyResult, loadName, loadRecord, saveName, saveRecord, type PlayerRecord } from '../game/storage';
+import { applyResult, loadModel, loadName, loadRecord, saveModel, saveName, saveRecord, type PlayerRecord } from '../game/storage';
+import type { ModelId } from '../bot/protocol';
 import type { Card } from '../engine/types';
 import { ART, ROLE_CLASS } from '../game/labels';
 import { Table } from './Table';
@@ -11,6 +12,7 @@ import { MindPanel, Timeline } from './Mind';
 import { Lobby, RecordChip, RulesBody } from './Lobby';
 import { Replay } from './Replay';
 import { Icon } from './Icon';
+import { onSoundChange, setSound, soundAllowed, soundOn } from '../game/sound';
 
 type Screen = 'lobby' | 'game' | 'replay';
 
@@ -27,6 +29,7 @@ export function App({ bot, embed, autoplay }: AppProps) {
   const [match, setMatch] = useState<Match | null>(null);
   const [record, setRecord] = useState<PlayerRecord>(loadRecord);
   const [name, setName] = useState(() => loadName() || '');
+  const [model, setModel] = useState<ModelId>(loadModel);
   const [rules, setRules] = useState(false);
   const [zoom, setZoom] = useState<Card | null>(null);
   const matchRef = useRef<Match | null>(null);
@@ -41,11 +44,13 @@ export function App({ bot, embed, autoplay }: AppProps) {
   };
 
   const startAttract = () => {
+    const seats: SeatConfig[] = [
+      { kind: 'bot', name: 'Gen 7', model: 'gen7' },
+      { kind: 'bot', name: 'Gen 5', model: 'gen5' },
+    ];
+    if (Math.random() < 0.5) seats.reverse();
     const m: Match = new Match(
-      [
-        { kind: 'bot', name: 'PPO-A' },
-        { kind: 'bot', name: 'PPO-B' },
-      ],
+      seats,
       bot,
       'attract',
       () => {
@@ -57,10 +62,10 @@ export function App({ bot, embed, autoplay }: AppProps) {
     begin(m);
   };
 
-  const startHuman = (playerName = name || 'You') => {
+  const startHuman = (playerName = name || 'You', opp: ModelId = model) => {
     const seats: SeatConfig[] = [
       { kind: 'human', name: playerName },
-      { kind: 'bot', name: BOT_NAME },
+      { kind: 'bot', name: BOT_NAME, model: opp },
     ];
     if (Math.random() < 0.5) seats.reverse(); // like web.py: random seat, random first player
     const m = new Match(seats, bot, 'human', (o: Outcome, mm: Match) => {
@@ -75,10 +80,12 @@ export function App({ bot, embed, autoplay }: AppProps) {
     begin(m);
   };
 
-  const play = (n: string) => {
+  const play = (n: string, m: ModelId) => {
     setName(n);
     saveName(n);
-    startHuman(n);
+    setModel(m);
+    saveModel(m);
+    startHuman(n, m);
   };
 
   useEffect(() => {
@@ -124,7 +131,7 @@ export function App({ bot, embed, autoplay }: AppProps) {
               <img src="images/coup-card-favicon-v1-180.png" alt="" />
             </span>
             <span class="brand-name">Coup RL Bot</span>
-            <span class="eyebrow brand-sub">gen5 · 1v1 · in-browser</span>
+            <span class="eyebrow brand-sub">{model} · 1v1 · in-browser</span>
           </button>
           <div class="topbar-right">
             <RecordChip record={record} />
@@ -133,6 +140,7 @@ export function App({ bot, embed, autoplay }: AppProps) {
                 <Icon name="play" size={14} /> New game
               </button>
             )}
+            <SoundToggle />
             <button type="button" class="btn btn-sm btn-icon" onClick={() => setRules(true)} aria-label="Rules and shortcuts" aria-keyshortcuts="?">
               <Icon name="help" size={16} />
             </button>
@@ -151,6 +159,7 @@ export function App({ bot, embed, autoplay }: AppProps) {
           <Lobby
             bot={bot}
             name={name}
+            model={model}
             record={record}
             embed={embed}
             onPlay={play}
@@ -177,7 +186,7 @@ export function App({ bot, embed, autoplay }: AppProps) {
                   <span class="live-dot" aria-hidden="true" />
                   <span class="attract-copy">
                     <strong>Live self-play</strong>
-                    <span>Gen5 vs Gen5 · hidden cards shown</span>
+                    <span>Gen 7 vs Gen 5 · hidden cards shown</span>
                   </span>
                   <button type="button" class="btn btn-primary" onClick={() => (embed ? startHuman() : toLobby())}>
                     <Icon name="play" /> Play the bot
@@ -265,5 +274,23 @@ function Modal({
         </div>
       )}
     </dialog>
+  );
+}
+
+function SoundToggle() {
+  const [on, setOn] = useState(soundOn);
+  useEffect(() => onSoundChange(() => setOn(soundOn())), []);
+  if (!soundAllowed()) return null;
+  return (
+    <button
+      type="button"
+      class={`btn btn-sm btn-icon ${on ? 'is-on' : ''}`}
+      onClick={() => setSound(!on)}
+      aria-pressed={on}
+      aria-label={on ? 'Sound on — mute' : 'Sound off — unmute'}
+      title={on ? 'Sound on' : 'Sound off'}
+    >
+      <Icon name={on ? 'sound' : 'mute'} size={16} />
+    </button>
   );
 }

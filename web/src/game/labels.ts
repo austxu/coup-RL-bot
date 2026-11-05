@@ -83,7 +83,10 @@ export type IconName =
   | 'help'
   | 'replay'
   | 'coin'
-  | 'cpu';
+  | 'cpu'
+  | 'sound'
+  | 'mute'
+  | 'brain';
 
 export const ACTIONS: ActionInfo[] = [
   { type: 'Income', key: 'i', short: 'Income', icon: 'income', role: null, effect: '+1 coin', cost: 0 },

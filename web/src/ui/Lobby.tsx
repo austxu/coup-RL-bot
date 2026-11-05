@@ -1,4 +1,5 @@
-import { useState } from 'preact/hooks';
+import { useEffect, useState } from 'preact/hooks';
+import type { ModelId } from '../bot/protocol';
 import type { BotClient } from '../bot/client';
 import { useSubscribe } from '../game/store';
 import type { PlayerRecord } from '../game/storage';
@@ -6,6 +7,7 @@ import { ART, ROLES, ROLE_CLASS } from '../game/labels';
 import { Icon } from './Icon';
 import { CardView } from './CardView';
 import { Bear } from './Bear';
+import { StrengthCard } from './Strength';
 
 export function RecordChip({ record, onReset }: { record: PlayerRecord; onReset?: () => void }) {
   const games = record.wins + record.losses;
@@ -28,9 +30,18 @@ export function RecordChip({ record, onReset }: { record: PlayerRecord; onReset?
   );
 }
 
+// training games behind the shipped Gen 7 checkpoint (versions/gen7/training_log_gen7.txt)
+const GEN7_GAMES = '12 million';
+
+const OPPONENTS: { id: ModelId; name: string; tag?: string; sub: string }[] = [
+  { id: 'gen7', name: 'Gen 7', tag: 'strongest', sub: 'League-trained against every earlier bot; reads your hand' },
+  { id: 'gen5', name: 'Gen 5', sub: 'The previous bot: 3.5M games, mostly self-play' },
+];
+
 export function Lobby({
   bot,
   name,
+  model,
   record,
   embed,
   onPlay,
@@ -40,20 +51,28 @@ export function Lobby({
 }: {
   bot: BotClient;
   name: string;
+  model: ModelId;
   record: PlayerRecord;
   embed: boolean;
-  onPlay: (name: string) => void;
+  onPlay: (name: string, model: ModelId) => void;
   onWatch: () => void;
   onRules: () => void;
   onResetRecord: () => void;
 }) {
   useSubscribe(bot);
   const [n, setN] = useState(name);
-  const ready = bot.status === 'ready';
+  const [m, setM] = useState<ModelId>(model);
+  const st = bot.models[m];
+  const ready = st.status === 'ready';
+  const pick = (id: ModelId) => {
+    setM(id);
+    bot.preload(id);
+  };
+  useEffect(() => bot.preload(m), []);
   const submit = (e: Event) => {
     e.preventDefault();
-    if (bot.status === 'error') return;
-    onPlay(n.trim().slice(0, 24) || 'You');
+    if (st.status === 'error') return;
+    onPlay(n.trim().slice(0, 24) || 'You', m);
   };
 
   return (
@@ -69,8 +88,9 @@ export function Lobby({
         <span class="eyebrow">01 / coup · reinforcement learning</span>
         <h1 class="lobby-h">Read the bluff.</h1>
         <p class="lobby-lede">
-          A 1v1 Coup bot trained with PPO and an LSTM memory over 3.5 million games, mostly against itself. It runs entirely in
-          your browser — 1.2&nbsp;MB of weights, no server, no waiting.
+          A 1v1 Coup bot trained with PPO and an LSTM memory in a league against every earlier version of itself —
+          {GEN7_GAMES} games on one desktop CPU. It learns to guess your hidden cards as it plays, and runs entirely in your
+          browser: 1.3&nbsp;MB of weights, no server, no waiting.
         </p>
 
         <form class="lobby-form" onSubmit={submit}>
@@ -86,8 +106,21 @@ export function Lobby({
               onInput={(e) => setN((e.target as HTMLInputElement).value)}
             />
           </label>
-          <button type="submit" class="btn btn-primary btn-lg" disabled={bot.status === 'error'}>
-            <Icon name="play" /> {ready ? 'Play the bot' : bot.status === 'error' ? 'Bot failed to load' : 'Play the bot'}
+          <fieldset class="opp-pick">
+            <legend class="eyebrow">opponent</legend>
+            {OPPONENTS.map((o) => (
+              <label class={`opp ${m === o.id ? 'is-on' : ''}`} key={o.id}>
+                <input type="radio" name="opp" value={o.id} checked={m === o.id} onChange={() => pick(o.id)} />
+                <span class="opp-name">
+                  {o.name}
+                  {o.tag && <span class="opp-tag">{o.tag}</span>}
+                </span>
+                <span class="opp-sub">{o.sub}</span>
+              </label>
+            ))}
+          </fieldset>
+          <button type="submit" class="btn btn-primary btn-lg" disabled={st.status === 'error'}>
+            <Icon name="play" /> {st.status === 'error' ? 'Bot failed to load' : 'Play the bot'}
             <kbd class="kbd">↵</kbd>
           </button>
           <button type="button" class="btn btn-lg" onClick={onWatch}>
@@ -95,11 +128,11 @@ export function Lobby({
           </button>
         </form>
         <p class="lobby-status" role="status">
-          <span class={`status-dot ${bot.status}`} aria-hidden="true" />
-          {bot.status === 'ready'
-            ? `Model loaded in ${bot.loadMs} ms · inference runs in a Web Worker`
-            : bot.status === 'error'
-              ? `Could not load the model: ${bot.error}`
+          <span class={`status-dot ${ready ? 'ready' : st.status === 'error' ? 'error' : 'loading'}`} aria-hidden="true" />
+          {ready
+            ? `${m === 'gen7' ? 'Gen 7' : 'Gen 5'} loaded in ${st.loadMs} ms · inference runs in a Web Worker`
+            : st.status === 'error'
+              ? `Could not load the model: ${st.error}`
               : 'Loading the model…'}
         </p>
         <div class="lobby-record">
@@ -134,6 +167,7 @@ export function Lobby({
               </li>
             ))}
           </ul>
+          <StrengthCard />
         </section>
       )}
     </div>

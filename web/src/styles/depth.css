@@ -1,0 +1,470 @@
+/* Depth and lighting layer: felt table, lit 3D cards, coin stacks, showdown
+   spotlight. Loaded after table.css / panels.css and only adds or overrides. */
+
+/* ---------- table: felt, rail, spotlight ---------- */
+
+.table {
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .045 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse 58% 46% at 50% 48%, rgba(158, 119, 237, 0.075), transparent 72%),
+    radial-gradient(ellipse 115% 90% at 50% 42%, #161a23 0%, #10131a 50%, #0a0c10 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    inset 0 -70px 90px -60px rgba(0, 0, 0, 0.9),
+    0 40px 90px -50px rgba(0, 0, 0, 0.95);
+  transition: box-shadow 0.5s;
+}
+/* the rail: a double hairline around the playing surface */
+.table::before {
+  inset: 46px 12px 12px;
+  background: none;
+  mask-image: none;
+  border-radius: clamp(40px, 9vw, 120px);
+  border: 1px solid rgba(158, 119, 237, 0.13);
+  box-shadow:
+    inset 0 0 0 6px rgba(12, 14, 18, 0.35),
+    inset 0 0 0 7px rgba(255, 255, 255, 0.025),
+    inset 0 30px 60px -40px rgba(0, 0, 0, 0.9),
+    inset 0 0 120px rgba(0, 0, 0, 0.35);
+  transition: border-color 0.5s, box-shadow 0.5s;
+}
+.table.has-showdown::before {
+  border-color: rgba(158, 119, 237, 0.24);
+}
+.table.has-showdown .seat {
+  filter: brightness(0.62) saturate(0.85);
+}
+.table.has-showdown .seat.is-claimer {
+  filter: none;
+}
+.seat {
+  transition: border-color 0.35s, background 0.35s, box-shadow 0.35s, opacity 0.4s, filter 0.45s;
+}
+.table-spot {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.45s var(--ease);
+  background: radial-gradient(ellipse 38% 30% at 50% 50%, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.42) 100%);
+  border-radius: inherit;
+}
+.table.has-showdown .table-spot {
+  opacity: 1;
+}
+.table.has-showdown .table-center {
+  z-index: 2;
+}
+
+/* ---------- cards: lighting, back art, contact shadow, tilt ---------- */
+
+.card-back-art {
+  position: absolute;
+  inset: 7%;
+  border-radius: calc(var(--card-h, 150px) * 0.05);
+  border: 1px solid rgba(158, 119, 237, 0.28);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(158, 119, 237, 0.2), transparent 58%),
+    repeating-conic-gradient(from 0deg at 50% 50%, rgba(158, 119, 237, 0.075) 0 5deg, transparent 5deg 10deg),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.028) 0 1px, transparent 1px 6px),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.028) 0 1px, transparent 1px 6px);
+  box-shadow: inset 0 0 0 3px rgba(12, 14, 18, 0.55), inset 0 0 0 4px rgba(158, 119, 237, 0.14);
+}
+.card-back img {
+  position: relative;
+}
+.card-light,
+.card-glint,
+.card-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+}
+.card-light {
+  background:
+    radial-gradient(circle at var(--mx, 22%) var(--my, 12%), rgba(255, 255, 255, 0.34), rgba(255, 255, 255, 0) 48%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.05), transparent 30%, transparent 70%, rgba(0, 0, 0, 0.18));
+  mix-blend-mode: soft-light;
+  opacity: 0.6;
+  transition: opacity 0.3s;
+}
+.card.is-tilting .card-light {
+  opacity: 1;
+}
+.card-glint {
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.5) 50%, transparent 62%) 160% 0 / 260% 100% no-repeat;
+  mix-blend-mode: overlay;
+  opacity: 0;
+}
+.card.is-up:not(.is-dead) .card-glint {
+  animation: glint 0.95s 0.28s ease-out both;
+}
+@keyframes glint {
+  from {
+    opacity: 1;
+    background-position: 160% 0;
+  }
+  to {
+    opacity: 0;
+    background-position: -70% 0;
+  }
+}
+/* Lambert-ish shading: the face turning towards the viewer brightens */
+.card-shade {
+  background: #000;
+  opacity: 0;
+  transition: opacity 0.6s cubic-bezier(0.3, 0.7, 0.25, 1);
+}
+.card.is-down .card-front .card-shade,
+.card.is-up .card-back .card-shade {
+  opacity: 0.75;
+}
+.card.is-up .card-inner {
+  transform: rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+}
+.card.is-tilting .card-inner {
+  transition: transform 0.12s ease-out;
+}
+.card.is-tilting {
+  z-index: 3;
+}
+.hand .card::before,
+.mini-hand .card::before {
+  content: '';
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  bottom: -9px;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.62), transparent);
+  filter: blur(3px);
+  transition: transform 0.45s var(--ease), opacity 0.45s;
+}
+.hand button.card:hover:not(.is-dead)::before {
+  transform: scale(0.85) translateY(4px);
+  opacity: 0.7;
+}
+.card.is-undealt::before {
+  opacity: 0;
+}
+
+/* ---------- coins ---------- */
+
+.coin {
+  background:
+    radial-gradient(circle at 35% 30%, #fff4cf 0, #f2c66d 40%, #c3913b 78%, #9a6c24 100%);
+  box-shadow:
+    inset 0 -1.5px 0 rgba(0, 0, 0, 0.35),
+    inset 0 0 0 2px rgba(255, 236, 180, 0.28),
+    0 0 0 1px rgba(122, 90, 30, 0.95);
+}
+.fx-coin {
+  width: 18px;
+  height: 18px;
+  background:
+    radial-gradient(circle at 35% 30%, #fff4cf 0, #f2c66d 40%, #c3913b 78%, #9a6c24 100%);
+  box-shadow:
+    inset 0 0 0 2px rgba(255, 236, 180, 0.3),
+    0 0 0 1px rgba(122, 90, 30, 0.95),
+    0 0 16px rgba(242, 198, 109, 0.45);
+  backface-visibility: visible;
+}
+.fx-coin-shadow {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 20px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.7), transparent);
+  will-change: transform, opacity;
+}
+.fx-card {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(158, 119, 237, 0.2), transparent 60%),
+    repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 6px),
+    radial-gradient(90% 70% at 50% 40%, #2a2f3a, #171a20 70%);
+  border-color: rgba(158, 119, 237, 0.3);
+}
+
+.stack {
+  --cw: 30px;
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: calc(var(--hand-h, 150px) * 0.62);
+  min-width: var(--cw);
+  padding-bottom: 6px;
+  flex: none;
+}
+.stack-col {
+  position: relative;
+  width: var(--cw);
+  height: 100%;
+}
+.stack-coin {
+  position: absolute;
+  left: 0;
+  width: var(--cw);
+  height: calc(var(--cw) * 0.42);
+  bottom: calc(var(--k) * 5px);
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse 60% 70% at 40% 35%, #fff4cf 0, #f2c66d 45%, #c3913b 90%);
+  box-shadow:
+    0 2px 0 #9a6c24,
+    0 3px 0 #7a5418,
+    0 0 0 1px rgba(90, 62, 18, 0.9),
+    inset 0 0 0 2px rgba(255, 236, 180, 0.25);
+  transform: translateX(calc(var(--jx) * 1px));
+}
+.stack-coin.is-new {
+  animation: coin-drop 0.5s cubic-bezier(0.3, 1.5, 0.5, 1) both;
+}
+@keyframes coin-drop {
+  from {
+    transform: translate(calc(var(--jx) * 1px), -26px);
+    opacity: 0;
+  }
+  60% {
+    opacity: 1;
+  }
+}
+.stack-shadow {
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.6), transparent);
+}
+.stack-more {
+  position: absolute;
+  top: -4px;
+  right: -10px;
+  font-family: var(--mono);
+  font-size: 10px;
+  color: var(--gold);
+}
+
+/* ---------- showdown ---------- */
+
+.showdown {
+  position: relative;
+  padding: 12px 20px 12px 12px;
+  background: rgba(22, 25, 32, 0.86);
+}
+.sd-card {
+  width: clamp(64px, 9vh, 92px);
+  height: calc(clamp(64px, 9vh, 92px) * 1.4);
+}
+.sd-face {
+  border-radius: 8px;
+}
+.sd-face-back {
+  background:
+    radial-gradient(circle at 50% 50%, rgba(158, 119, 237, 0.24), transparent 60%),
+    repeating-conic-gradient(from 0deg at 50% 50%, rgba(158, 119, 237, 0.08) 0 5deg, transparent 5deg 10deg),
+    #1c2029;
+  box-shadow: inset 0 0 0 3px rgba(12, 14, 18, 0.6), inset 0 0 0 4px rgba(158, 119, 237, 0.2);
+}
+.sd-rays {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 260%;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+  border-radius: 50%;
+  pointer-events: none;
+  opacity: 0;
+  background: repeating-conic-gradient(from 0deg, color-mix(in srgb, var(--ray) 40%, transparent) 0 6deg, transparent 6deg 20deg);
+  mask-image: radial-gradient(closest-side, #000 20%, transparent 100%);
+}
+.sd-proven .sd-rays {
+  --ray: var(--lime);
+  animation: rays 2.4s 0.35s linear both;
+}
+.sd-bluff .sd-rays {
+  --ray: var(--ember);
+  animation: rays 1.6s 0.35s linear both;
+}
+@keyframes rays {
+  0% {
+    opacity: 0;
+    rotate: 0deg;
+    scale: 0.6;
+  }
+  15% {
+    opacity: 0.9;
+    scale: 1;
+  }
+  100% {
+    opacity: 0;
+    rotate: 60deg;
+  }
+}
+.sd-crack {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+.sd-bluff .sd-crack {
+  animation: crack 0.25s 0.42s ease-out both;
+}
+@keyframes crack {
+  from {
+    opacity: 0;
+    clip-path: circle(0% at 48% 40%);
+  }
+  to {
+    opacity: 1;
+    clip-path: circle(80% at 48% 40%);
+  }
+}
+.sd-proven .sd-face-front {
+  box-shadow: 0 0 0 1px var(--lime), 0 0 30px -4px rgba(126, 231, 135, 0.7);
+}
+.sd-bluff .sd-face-front {
+  box-shadow: 0 0 0 1px var(--ember), 0 0 30px -4px rgba(240, 136, 123, 0.7);
+}
+
+/* ---------- sound toggle ---------- */
+
+.btn-icon.is-on {
+  color: var(--accent);
+  border-color: rgba(158, 119, 237, 0.45);
+}
+
+.seat-side {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 0;
+}
+.hand .stack {
+  margin-right: 6px;
+}
+
+.attract-copy {
+  min-width: 0;
+}
+.attract-cta .btn {
+  flex: none;
+}
+
+@media (max-width: 760px), (max-height: 560px) {
+  .stack {
+    display: none;
+  }
+  .seat-side {
+    display: contents;
+  }
+  .table::before {
+    inset: 40px 6px 6px;
+    border-radius: 36px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-glint,
+  .stack-coin.is-new,
+  .sd-rays,
+  .sd-crack {
+    animation: none !important;
+  }
+  .sd-bluff .sd-crack {
+    opacity: 1;
+  }
+  .card.is-up .card-inner {
+    transform: none;
+  }
+  .card-shade {
+    transition: none;
+  }
+}
+
+/* ---------- deck, treasury, felt mark ---------- */
+
+.deck-stack {
+  width: 58px;
+  height: 81px;
+  margin-bottom: 8px;
+}
+.deck-card {
+  border-radius: 6px;
+  border-color: rgba(158, 119, 237, 0.22);
+  background:
+    radial-gradient(circle at 50% 50%, rgba(158, 119, 237, 0.18), transparent 60%),
+    repeating-conic-gradient(from 0deg at 50% 50%, rgba(158, 119, 237, 0.07) 0 5deg, transparent 5deg 10deg),
+    #1b1f28;
+  transform: translate(calc(var(--i) * 0.6px), calc(var(--i) * -1.6px));
+  box-shadow:
+    0 1px 0 #0b0d11,
+    0 2px 0 #2a2f3a,
+    0 10px 18px -10px rgba(0, 0, 0, 0.9);
+}
+.deck-card:first-child {
+  box-shadow: 0 1px 0 #0b0d11, 0 12px 24px -8px rgba(0, 0, 0, 0.95);
+}
+.coin-heap {
+  width: 84px;
+  height: 58px;
+}
+.coin-heap .coin,
+.coin-heap .coin:nth-child(2n) {
+  width: 24px;
+  height: 24px;
+  left: calc(50% - 12px + var(--x) * 12px);
+  bottom: calc(17px + var(--y) * -9px);
+  transform: rotateX(58deg);
+  box-shadow:
+    0 2px 0 #9a6c24,
+    0 3px 0 #6e4a14,
+    0 0 0 1px rgba(90, 62, 18, 0.9),
+    inset 0 0 0 2px rgba(255, 236, 180, 0.25);
+}
+.coin-heap::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 0;
+  height: 18px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.55), transparent);
+  z-index: -1;
+}
+.stage-idle {
+  height: auto;
+}
+.felt-mark {
+  display: block;
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: clamp(28px, 5vw, 54px);
+  letter-spacing: 0.5em;
+  margin-right: -0.5em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.016);
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.02), 0 -1px 0 rgba(0, 0, 0, 0.45);
+  user-select: none;
+}
+@media (max-width: 760px), (max-height: 560px) {
+  .felt-mark {
+    display: none;
+  }
+  .deck-stack {
+    width: 40px;
+    height: 56px;
+    margin-bottom: 2px;
+  }
+  .coin-heap {
+    transform: scale(0.75);
+  }
+}

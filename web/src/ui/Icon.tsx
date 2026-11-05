@@ -28,6 +28,9 @@ const PATHS: Record<IconName, string> = {
   replay: 'M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4M10.5 9.5v5l4-2.5z',
   coin: 'M12 4a8 8 0 1 0 0 16 8 8 0 1 0 0-16M12 8v8M9.5 10h3.5a1.5 1.5 0 0 1 0 3h-2a1.5 1.5 0 0 0 0 3H14',
   cpu: 'M7 7h10v10H7zM10 3v4M14 3v4M10 17v4M14 17v4M3 10h4M3 14h4M17 10h4M17 14h4',
+  sound: 'M4 9.5h3.5L12 5.5v13l-4.5-4H4zM15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11',
+  mute: 'M4 9.5h3.5L12 5.5v13l-4.5-4H4zM16 9.5l5 5M21 9.5l-5 5',
+  brain: 'M9 4.5a3 3 0 0 0-3 3 3 3 0 0 0-1.5 5.5A3 3 0 0 0 7 18a2.5 2.5 0 0 0 5 .5V6a2 2 0 0 0-3-1.5zM15 4.5a3 3 0 0 1 3 3 3 3 0 0 1 1.5 5.5A3 3 0 0 1 17 18a2.5 2.5 0 0 1-5 .5',
 };
 
 export function Icon({ name, size = 16, class: cls = '' }: { name: IconName; size?: number; class?: string }) {

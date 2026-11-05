@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import type { Match, MatchVM, SeatVM, Callout } from '../game/match';
 import { ART, ROLE_CLASS, pad2, pct } from '../game/labels';
 import { CardView } from './CardView';
@@ -40,7 +40,8 @@ export function Table({ match, vm, embed, onZoom, onAgain, onReplay, onLobby }: 
         : `${vm.seats[cur].name.toLowerCase()}'s move`;
 
   return (
-    <div class={`table phase-${vm.phase} ${vm.xray ? 'is-xray' : ''}`} aria-label="Coup table">
+    <div class={`table phase-${vm.phase} ${vm.xray ? 'is-xray' : ''} ${vm.showdown ? 'has-showdown' : ''}`} aria-label="Coup table">
+      <div class="table-spot" aria-hidden="true" />
       <div class="table-bar">
         <span class="eyebrow">
           {vm.turn > 0 ? `turn ${pad2(vm.turn)}` : 'turn 00'} / {whose || '—'}
@@ -66,7 +67,7 @@ export function Table({ match, vm, embed, onZoom, onAgain, onReplay, onLobby }: 
       <div class="table-center">
         <div class="pile deck" data-anchor="deck" aria-label={`Court deck, ${vm.deck} cards`}>
           <div class="deck-stack" aria-hidden="true">
-            {[0, 1, 2].map((i) => (
+            {Array.from({ length: Math.max(1, Math.ceil(vm.deck / 2)) }, (_, i) => (
               <span class="deck-card" style={{ '--i': i } as any} key={i} />
             ))}
           </div>
@@ -80,8 +81,8 @@ export function Table({ match, vm, embed, onZoom, onAgain, onReplay, onLobby }: 
 
         <div class="pile treasury" data-anchor="treasury" aria-label="Treasury">
           <div class="coin-heap" aria-hidden="true">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <span class="coin" style={{ '--i': i } as any} key={i} />
+            {HEAP.map(([x, y], i) => (
+              <span class="coin" style={{ '--x': x, '--y': y } as any} key={i} />
             ))}
           </div>
           <span class="pile-label">
@@ -116,12 +117,24 @@ function Stage({ vm }: { vm: MatchVM }) {
     return (
       <div class={`stage showdown sd-${sd.result} ${ROLE_CLASS[sd.card]}`} key={sd.id} aria-hidden="true">
         <div class="sd-card">
+          <span class="sd-rays" />
           <span class="sd-card-inner">
             <span class="sd-face sd-face-back" />
             <span class="sd-face sd-face-front">
               <img src={ART[sd.card].sm} alt="" />
             </span>
           </span>
+          {sd.result === 'bluff' && (
+            <svg class="sd-crack" viewBox="0 0 100 140" preserveAspectRatio="none">
+              <path
+                d="M48 56 L30 20 L34 2 M48 56 L70 30 L92 26 M48 56 L18 70 L2 66 M48 56 L58 92 L50 120 L56 140 M48 56 L82 84 L98 110"
+                fill="none"
+                stroke="rgba(255,220,214,.85)"
+                stroke-width="1.6"
+                vector-effect="non-scaling-stroke"
+              />
+            </svg>
+          )}
           {sd.result === 'bluff' && <span class="sd-stamp">bluff</span>}
           {sd.result === 'proven' && (
             <span class="sd-check">
@@ -156,7 +169,11 @@ function Stage({ vm }: { vm: MatchVM }) {
       </div>
     );
   }
-  return <div class="stage stage-idle" aria-hidden="true" />;
+  return (
+    <div class="stage stage-idle" aria-hidden="true">
+      <span class="felt-mark">coup</span>
+    </div>
+  );
 }
 
 function Seat({
@@ -186,7 +203,7 @@ function Seat({
     <section
       class={`seat seat-${pos} ${active ? 'is-active' : ''} ${seat.eliminated ? 'is-out' : ''} ${
         seat.thinking ? 'is-thinking' : ''
-      } ${vm.outcome?.winner === i ? 'is-winner' : ''}`}
+      } ${vm.outcome?.winner === i ? 'is-winner' : ''} ${vm.showdown?.claimer === i ? 'is-claimer' : ''}`}
       aria-label={`${isViewer ? 'Your seat' : seat.name}: ${seat.coins} coins, ${alive} influence`}
     >
       <div class="seat-info">
@@ -277,7 +294,10 @@ function Seat({
         ))}
       </div>
 
-      <div class="seat-callout">{callout && <CalloutBubble c={callout} vm={vm} />}</div>
+      <div class="seat-side">
+        <CoinStack n={seat.coins} anchor={`seat-${i}-coins`} />
+        <div class="seat-callout">{callout && <CalloutBubble c={callout} vm={vm} />}</div>
+      </div>
     </section>
   );
 }
@@ -314,6 +334,40 @@ function CalloutBubble({ c, vm }: { c: Callout; vm: MatchVM }) {
       </span>
       {c.bluff === true && <span class="tag tag-bluff">bluff</span>}
       {c.bluff === false && <span class="tag tag-honest">holds it</span>}
+    </div>
+  );
+}
+
+// treasury heap: (x, y) offsets in coin radii, back to front
+const HEAP: [number, number][] = [
+  [-1.6, 0.9], [0.1, 1.1], [1.7, 0.8], [-0.8, 0.2], [0.9, 0.3], [-1.9, -0.4], [0, -0.5], [1.9, -0.3], [-0.9, -1.1], [1, -1],
+];
+
+/** The seat's coins as a physical stack (columns of 6). Hidden on small screens. */
+function CoinStack({ n, anchor }: { n: number; anchor: string }) {
+  const prev = useRef(n);
+  const grew = n > prev.current ? prev.current : n;
+  useEffect(() => {
+    prev.current = n;
+  }, [n]);
+  const shown = Math.min(n, 18);
+  const cols: number[][] = [];
+  for (let k = 0; k < shown; k++) (cols[Math.floor(k / 6)] ??= []).push(k);
+  return (
+    <div class="stack" data-anchor={anchor} aria-hidden="true">
+      <span class="stack-shadow" />
+      {cols.map((col, c) => (
+        <span class="stack-col" key={c}>
+          {col.map((k) => (
+            <span
+              key={k}
+              class={`stack-coin ${k >= grew ? 'is-new' : ''}`}
+              style={{ '--k': k % 6, '--jx': ((k * 37) % 5) - 2, animationDelay: `${(k - grew) * 60}ms` } as any}
+            />
+          ))}
+        </span>
+      ))}
+      {n > shown && <span class="stack-more">+{n - shown}</span>}
     </div>
   );
 }

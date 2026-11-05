@@ -6,6 +6,7 @@ import { Icon } from './Icon';
 import { PolicyBars, Sparkline } from './Mind';
 import { summaryLines } from './GameOver';
 import { Bear, type BearMood } from './Bear';
+import { BeliefBars, BeliefStrip } from './Belief';
 
 /** The bot narrates its own decisions in the post-mortem. */
 function narrate(f: Frame, vm: MatchVM): { line: string; mood: BearMood } {
@@ -89,6 +90,14 @@ export function Replay({ vm, onClose, onAgain }: { vm: MatchVM; onClose: () => v
     for (let k = 0; k <= i; k++) {
       const m = frames[k].mind;
       if (m && m.value !== null) n = vm.values.findIndex((v) => v.seat === m.seat && v.turn === m.turn && v.v === m.value);
+    }
+    return n;
+  })();
+  const beliefIdx = (() => {
+    let n: number | null = null;
+    for (let k = 0; k <= i; k++) {
+      const b = frames[k].mind?.belief;
+      if (b) n = vm.beliefs.find((x) => x.b === b)?.n ?? n;
     }
     return n;
   })();
@@ -187,6 +196,18 @@ export function Replay({ vm, onClose, onAgain }: { vm: MatchVM; onClose: () => v
                 </p>
               )}
               <PolicyBars entry={f.mind} />
+              {f.mind.belief && (
+                <div class="belief rp-belief">
+                  <span class="eyebrow">
+                    what it thought {1 - f.seat === vm.viewer ? 'you' : vm.seats[1 - f.seat].name} held
+                  </span>
+                  <BeliefBars
+                    b={f.mind.belief}
+                    showTruth
+                    truthLabel={1 - f.seat === vm.viewer ? 'you held it' : 'actually held'}
+                  />
+                </div>
+              )}
             </>
           ) : vm.seats[f.seat].kind === 'human' ? (
             <p class="mind-note">Your decision — no policy to show.</p>
@@ -244,6 +265,7 @@ export function Replay({ vm, onClose, onAgain }: { vm: MatchVM; onClose: () => v
             label="Bot win estimate across the game"
           />
         )}
+        <BeliefStrip vm={vm} cursorTurn={f.turn} cursorN={beliefIdx} />
           </div>
           <button type="button" class="btn btn-sm" onClick={() => step(1)} aria-label="Next decision">
             <Icon name="arrowRight" />

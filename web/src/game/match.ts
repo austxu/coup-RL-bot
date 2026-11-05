@@ -4,11 +4,14 @@
 
 import { CoupGame } from '../engine/game';
 import { encodePrompt, exchangeHeuristic, rlToAnswer, type ReqType } from '../engine/encode';
+import { classCards, encodePrompt7, roleMarginals } from '../engine/encode7';
+import type { ModelId } from '../bot/protocol';
 import type { Answer, Card, GameEvent, Prompt } from '../engine/types';
 import { ACTION_CHARACTER } from '../engine/types';
 import type { BotClient } from '../bot/client';
 import { Store } from './store';
-import { flyCard, flyCoins } from './fx';
+import { flyCard, flyCoins, shake } from './fx';
+import { play } from './sound';
 import { Cancelled, prefersReducedMotion, sleep, uniform } from './timing';
 import { ACTION_INFO, declareText, optionLabel, optionRole, type IconName } from './labels';
 
@@ -28,6 +31,7 @@ export interface SeatVM {
   idx: number;
   name: string;
   kind: 'human' | 'bot';
+  model: ModelId | null;
   coins: number;
   slots: Slot[];
   order: number[]; // engine card order -> slot ids
@@ -88,6 +92,16 @@ export interface MindOption {
   role: Card | null;
 }
 
+/** What a Gen7 seat believes about its opponent's hidden hand after a decision. */
+export interface Belief {
+  /** P(opponent holds at least one copy), in CARDS order. */
+  roles: number[];
+  /** Most likely hands, best first. */
+  top: { cards: Card[]; p: number }[];
+  /** Opponent's actual hidden cards at that moment (for x-ray / review only). */
+  truth: Card[];
+}
+
 export interface MindEntry {
   id: number;
   seat: number;
@@ -96,6 +110,7 @@ export interface MindEntry {
   title: string;
   options: MindOption[];
   value: number | null;
+  belief: Belief | null;
   sampledBelowTop: boolean;
   ms: number;
 }
@@ -158,6 +173,7 @@ export interface MatchVM {
   log: LogEntry[];
   mind: MindEntry[];
   values: { seat: number; v: number; n: number; turn: number }[];
+  beliefs: { seat: number; n: number; turn: number; b: Belief }[];
   narration: string;
   narrationKey: number;
   outcome: Outcome | null;
@@ -168,6 +184,8 @@ export interface MatchVM {
 export interface SeatConfig {
   kind: 'human' | 'bot';
   name: string;
+  /** Bot policy (default Gen7). */
+  model?: ModelId;
 }
 
 let uid = 1;
@@ -184,6 +202,8 @@ export class Match {
   private frame: Frame | null = null;
   private lastClaimFrame: Frame | null = null;
   private lastChallengeFrame: Frame | null = null;
+  /** Gen7 feeds back its previous decision (RL index) per seat. */
+  private prev = [-1, -1];
 
   constructor(
     private readonly seats: SeatConfig[],
@@ -201,6 +221,7 @@ export class Match {
         idx,
         name: s.name,
         kind: s.kind,
+        model: s.kind === 'bot' ? (s.model ?? 'gen7') : null,
         coins: 2,
         slots: [],
         order: [],
@@ -224,6 +245,7 @@ export class Match {
       log: [],
       mind: [],
       values: [],
+      beliefs: [],
       narration: '',
       narrationKey: 0,
       outcome: null,
@@ -340,13 +362,19 @@ export class Match {
         title: 'Exchange · keeps its highest-value cards',
         options: [],
         value: null,
+        belief: null,
         sampledBelowTop: false,
         ms: 0,
       };
     } else {
-      const enc = encodePrompt(this.game.state, prompt)!;
-      const d = await this.bot.decide(`${this.key}:${prompt.p}`, enc.obs, enc.mask);
+      const model = seat.model ?? 'gen7';
+      const key = `${this.key}:${prompt.p}`;
+      let enc: { req: ReqType; obs: Float32Array; mask: Uint8Array; bmask?: Uint8Array };
+      if (model === 'gen7') enc = encodePrompt7(this.game.state, prompt, this.prev[prompt.p])!;
+      else enc = encodePrompt(this.game.state, prompt)!;
+      const d = await this.bot.decide(key, model, enc.obs, enc.mask, enc.bmask);
       if (this.cancelled) throw new Cancelled();
+      this.prev[prompt.p] = d.choice;
       answer = rlToAnswer(prompt, d.choice) as Answer;
       const loseLabels = this.loseLabels(prompt.p);
       const options: MindOption[] = [];
@@ -369,6 +397,7 @@ export class Match {
         title: this.mindTitle(prompt),
         options,
         value: d.value,
+        belief: d.belief && d.belief.some((x) => x > 0) ? this.belief(d.belief, 1 - prompt.p) : null,
         sampledBelowTop: d.probs[d.choice] < top - 1e-9,
         ms: d.ms,
       };
@@ -381,9 +410,22 @@ export class Match {
     if (entry.value !== null) {
       this.vm.values.push({ seat: prompt.p, v: entry.value, n: this.vm.values.length, turn: this.vm.turn });
     }
+    if (entry.belief) {
+      this.vm.beliefs.push({ seat: prompt.p, n: this.vm.beliefs.length, turn: this.vm.turn, b: entry.belief });
+    }
     if (this.frame) this.frame.mind = entry;
     this.emit();
     return answer;
+  }
+
+  private belief(classes: number[], opp: number): Belief {
+    const top = classes
+      .map((p, k) => ({ p, k }))
+      .filter((x) => x.p > 0)
+      .sort((a, b) => b.p - a.p)
+      .slice(0, 3)
+      .map(({ p, k }) => ({ p, cards: classCards(k) }));
+    return { roles: roleMarginals(classes), top, truth: [...this.game.state.players[opp].cards] };
   }
 
   private loseLabels(p: number): [string, string] {
@@ -582,6 +624,7 @@ export class Match {
         vm.seats.forEach((s, i) => {
           if (this.isViewer(i) || vm.xray) s.slots.forEach((sl) => (sl.open = true));
         });
+        play('flip');
         vm.phase = 'playing';
         this.say(
           vm.viewer !== null
@@ -620,6 +663,7 @@ export class Match {
           bluff,
         });
         vm.recap = { text, icon: info.icon, role: e.claim };
+        if (e.claim) play('claim');
         this.react(1 - e.player, 'look', 'opponent');
         this.say(text, info.icon, e.action === 'Coup' || e.action === 'Assassinate' ? 'bad' : 'neutral', e.player, e.claim);
         this.emit();
@@ -646,6 +690,7 @@ export class Match {
           isBlock: e.isBlock,
           result: 'pending',
         };
+        play('challenge');
         this.say(
           `${this.who(e.challenger)} challenge${this.isViewer(e.challenger) ? '' : 's'} ${this.isViewer(e.claimer) ? 'your' : `${this.name(e.claimer)}'s`} ${e.card}${e.isBlock ? ' block' : ''}`,
           'challenge',
@@ -661,6 +706,8 @@ export class Match {
         const seat = vm.seats[e.claimer];
         const slot = this.slotFor(seat, e.slot);
         vm.showdown = vm.showdown ? { ...vm.showdown, result: 'proven' } : null;
+        play('flip');
+        play('proven', 250);
         slot.flash = 'proven';
         slot.flashKey++;
         if (vm.xray || this.isViewer(e.claimer)) slot.open = true;
@@ -698,6 +745,9 @@ export class Match {
       }
       case 'bluffCaught': {
         vm.showdown = vm.showdown ? { ...vm.showdown, result: 'bluff' } : null;
+        play('flip');
+        play('bluff', 300);
+        window.setTimeout(() => shake(document.querySelector('.table')), 380);
         if (this.lastChallengeFrame?.challenge) this.lastChallengeFrame.challenge.won = true;
         if (this.lastClaimFrame) this.lastClaimFrame.caught = true;
         this.react(1 - e.claimer, 'jump');
@@ -723,6 +773,7 @@ export class Match {
         slot.flash = 'lost';
         slot.flashKey++;
         if (e.eliminated) seat.eliminated = true;
+        play('lose');
         this.react(e.player, 'fail');
         this.say(
           `${this.who(e.player)} lose${this.isViewer(e.player) ? '' : 's'} ${e.card}${e.eliminated ? ' and ' + (this.isViewer(e.player) ? 'are' : 'is') + ' out' : ''}.`,
@@ -739,6 +790,7 @@ export class Match {
       }
       case 'block': {
         this.callout({ seat: e.blocker, kind: 'block', text: `Blocks with ${e.card}`, role: e.card, bluff: null });
+        play('claim');
         const bluff = this.isViewer(e.blocker) || vm.xray
           ? !vm.seats[e.blocker].slots.some((s) => !s.dead && s.card === e.card)
           : null;
@@ -844,6 +896,7 @@ export class Match {
         vm.outcome = outcome;
         vm.phase = 'over';
         vm.seats.forEach((s) => this.react(s.idx, s.idx === e.winner ? 'jump' : 'fail'));
+        play(vm.viewer === null || e.winner === vm.viewer ? 'win' : 'defeat', 200);
         const txt =
           e.winner === null
             ? 'Draw — the 500-turn limit was reached.'
