@@ -1,98 +1,249 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Coup Online - AI Showdown</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#13161b">
+    <meta name="application-name" content="Coup RL Bot">
+    <meta name="description" content="A Gen5 1v1 Coup bot for decision-making under hidden information.">
+    <meta property="og:site_name" content="Austin Xu">
+    <meta property="og:title" content="Coup RL Bot">
+    <meta property="og:description" content="A Gen5 1v1 Coup bot for decision-making under hidden information.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://coup.austxu.dev/">
+    <link rel="canonical" href="https://coup.austxu.dev/">
+    <link rel="icon" href="images/coup-card-favicon-v1-32.png" type="image/png" sizes="32x32">
+    <link rel="shortcut icon" href="images/coup-card-favicon-v1-32.png" type="image/png">
+    <link rel="apple-touch-icon" href="images/coup-card-favicon-v1-180.png" sizes="180x180">
+    <title>Coup RL Bot</title>
+    <link rel="stylesheet" href="styles.css?v=20260727-3">
 </head>
 
 <body>
-    <div id="app">
-        <!-- Floating Score/Clear Box -->
-        <div id="top-score-box" class="glass-panel" style="position:fixed; top:1rem; right:1rem; padding:10px 15px; z-index:100; font-weight:bold; display:flex; align-items:center;">
-            <span id="top-stats">Wins: 0 | Losses: 0</span>
-            <button id="clear-score-btn" class="btn" style="margin:0 0 0 10px; padding:5px 10px; font-size:0.8rem; background:var(--accent);">Clear</button>
+    <main id="app">
+        <header class="product-header" aria-label="Product">
+            <span class="product-title">Coup RL Bot</span>
+            <span class="product-context">Gen5 · 1v1</span>
+        </header>
+        <div id="connection-status" class="connection-status" role="status" aria-live="polite">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="connection-text">Connecting…</span>
         </div>
 
-        <div id="lobby-screen" class="screen active">
-            <div class="glass-panel lobby-panel">
-                <h2>Welcome to Coup</h2>
-                <p>Play against the trained PPO-AI bot.</p>
-                <div id="lobby-stats" style="margin-bottom: 15px; font-weight: 600; color: var(--accent);">Record - Wins: 0 | Losses: 0</div>
-                <input type="text" id="player-name" placeholder="Enter your name" value="Human" />
-                <button id="start-btn" class="btn primary-btn">Start Game</button>
-                <p id="backend-status" role="status" aria-live="polite">Waking the Gen5 bot…</p>
+        <aside id="top-score-box" class="glass-panel score-box" aria-label="Match record">
+            <span id="top-stats">Wins: 0 · Losses: 0</span>
+            <button id="clear-score-btn" class="btn compact-btn" type="button">Clear</button>
+        </aside>
+
+        <section
+            id="portfolio-preview"
+            class="screen portfolio-preview"
+            aria-labelledby="portfolio-preview-title"
+            hidden
+        >
+            <div class="portfolio-preview-shell">
+                <header class="portfolio-preview-header">
+                    <div>
+                        <p class="portfolio-preview-eyebrow">Representative position</p>
+                        <h1 id="portfolio-preview-title">Read the bluff.</h1>
+                    </div>
+                    <span class="portfolio-preview-model">Gen5 PPO</span>
+                </header>
+
+                <div class="portfolio-preview-grid">
+                    <div class="portfolio-preview-table" aria-label="Illustrative Coup position">
+                        <div class="portfolio-preview-seat">
+                            <div class="portfolio-preview-seat-copy">
+                                <strong>PPO-AI</strong>
+                                <span>2 coins · 2 influence</span>
+                            </div>
+                            <div class="portfolio-preview-cards" aria-label="Two hidden AI cards">
+                                <img src="images/card_back.png" alt="Hidden AI card">
+                                <img src="images/card_back.png" alt="Hidden AI card">
+                            </div>
+                        </div>
+
+                        <div class="portfolio-preview-turn" aria-hidden="true">
+                            <span>claims</span>
+                            <strong>Duke · Tax</strong>
+                        </div>
+
+                        <div class="portfolio-preview-seat">
+                            <div class="portfolio-preview-cards" aria-label="Your two cards">
+                                <img src="images/duke.png" alt="Your Duke card">
+                                <img src="images/captain.png" alt="Your Captain card">
+                            </div>
+                            <div class="portfolio-preview-seat-copy">
+                                <strong>You</strong>
+                                <span>3 coins · 2 influence</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="portfolio-preview-decision">
+                        <p class="portfolio-preview-eyebrow">Your decision</p>
+                        <h2>Challenge the Duke claim?</h2>
+                        <p class="portfolio-preview-hook">
+                            One wrong read costs influence. One good call exposes the bot.
+                        </p>
+                        <div class="portfolio-preview-choices" aria-label="Illustrative choices">
+                            <span>Challenge</span>
+                            <span>Allow claim</span>
+                        </div>
+                        <div class="portfolio-preview-log" aria-label="Illustrative action log">
+                            <span><b>01</b> You took Income</span>
+                            <span><b>02</b> PPO-AI claims Tax</span>
+                        </div>
+                    </div>
+                </div>
+
+                <footer class="portfolio-preview-footer">
+                    <p id="portfolio-preview-status">
+                        Illustrative position · no live match is running
+                    </p>
+                    <button id="portfolio-preview-start" class="btn primary-btn" type="button">
+                        Play live bot <span aria-hidden="true">→</span>
+                    </button>
+                </footer>
             </div>
-        </div>
+        </section>
 
-        <div id="game-screen" class="screen">
+        <section id="lobby-screen" class="screen active" aria-labelledby="lobby-title">
+            <form id="lobby-form" class="glass-panel lobby-panel">
+                <h1 id="lobby-title">Play Coup</h1>
+                <p>Play a two-player match against the trained PPO-AI bot.</p>
+                <p id="lobby-stats" class="record">Wins: 0 · Losses: 0</p>
+                <label for="player-name">Player name</label>
+                <input
+                    type="text"
+                    id="player-name"
+                    name="player-name"
+                    maxlength="24"
+                    autocomplete="nickname"
+                    value="Human"
+                    required
+                >
+                <button id="start-btn" class="btn primary-btn" type="submit" disabled>
+                    Start Game
+                </button>
+                <p id="lobby-message" class="lobby-message" aria-live="polite"></p>
+                <details class="rules-help">
+                    <summary>How to play</summary>
+                    <div class="rules-content">
+                        <p>
+                            Be the last player with influence. Character actions and blocks are
+                            claims: you may bluff, and either player may challenge.
+                        </p>
+                        <ul>
+                            <li><strong>Income:</strong> gain 1 coin.</li>
+                            <li><strong>Foreign Aid:</strong> gain 2; the Duke can block.</li>
+                            <li><strong>Tax (Duke):</strong> gain 3 coins.</li>
+                            <li><strong>Steal (Captain):</strong> take up to 2 coins.</li>
+                            <li><strong>Exchange (Ambassador):</strong> draw 2, then return 2.</li>
+                            <li><strong>Assassinate (Assassin):</strong> pay 3 to remove influence.</li>
+                            <li><strong>Coup:</strong> pay 7 to remove influence; at 10 coins it is required.</li>
+                        </ul>
+                    </div>
+                </details>
+            </form>
+        </section>
+
+        <section id="game-screen" class="screen" aria-label="Coup game board" hidden>
             <div class="board">
-                <!-- Opponent Area -->
-                <div id="opponent-area" class="player-area opponent">
+                <section id="opponent-area" class="player-area opponent" aria-labelledby="ai-name">
                     <div class="player-info glass-panel">
                         <h2 id="ai-name">PPO-AI</h2>
                         <div class="stats">
-                            <span class="coin-stat"><span id="ai-coins">0</span> 🪙</span>
-                            <span class="influence-stat"><span id="ai-influence">2</span> 🎴</span>
+                            <span class="coin-stat" aria-label="Opponent coins">
+                                <span id="ai-coins">2</span>
+                                <span aria-hidden="true">🪙</span>
+                            </span>
+                            <span class="influence-stat" aria-label="Opponent remaining influence">
+                                <span id="ai-influence">2</span>
+                                <span aria-hidden="true">🎴</span>
+                            </span>
                         </div>
                     </div>
-                    <div class="cards-container" id="ai-cards">
-                        <!-- AI Cards generated dynamically -->
-                    </div>
-                </div>
+                    <div class="cards-container" id="ai-cards" aria-label="Opponent cards"></div>
+                </section>
 
-                <!-- Action Feed and Prompts -->
-                <div id="center-area">
+                <section id="center-area" aria-label="Game activity">
                     <div id="action-feed-container" class="glass-panel">
-                        <h3>Action Log</h3>
-                        <div id="action-feed"></div>
+                        <h2>Action log</h2>
+                        <div
+                            id="action-feed"
+                            role="log"
+                            aria-live="polite"
+                            aria-relevant="additions text"
+                        ></div>
                     </div>
-                    <div id="prompt-container" class="glass-panel prompt-hidden">
-                        <h2 id="prompt-title">Prompt Title</h2>
-                        <div id="prompt-options">
-                            <!-- Options generated dynamically -->
-                        </div>
+                    <div
+                        id="prompt-container"
+                        class="glass-panel prompt-hidden"
+                        aria-live="assertive"
+                        aria-labelledby="prompt-title"
+                        aria-busy="false"
+                    >
+                        <h2 id="prompt-title" tabindex="-1">Waiting for the game…</h2>
+                        <div id="prompt-options"></div>
                     </div>
-                </div>
+                </section>
 
-                <!-- Player Area -->
-                <div id="player-area" class="player-area me">
-                    <div class="cards-container" id="my-cards">
-                        <!-- My Cards generated dynamically -->
-                    </div>
+                <section id="player-area" class="player-area me" aria-labelledby="my-name">
+                    <div class="cards-container" id="my-cards" aria-label="Your cards"></div>
                     <div class="player-info glass-panel">
                         <h2 id="my-name">Player</h2>
                         <div class="stats">
-                            <span class="coin-stat"><span id="my-coins">2</span> 🪙</span>
+                            <span class="coin-stat" aria-label="Your coins">
+                                <span id="my-coins">2</span>
+                                <span aria-hidden="true">🪙</span>
+                            </span>
                         </div>
                     </div>
-                </div>
+                </section>
             </div>
-            <!-- Court deck info -->
-            <div id="deck-info" class="glass-panel">
-                Deck: <span id="deck-size">15</span>
+            <div id="deck-info" class="glass-panel" aria-label="Cards remaining in the court deck">
+                Deck: <span id="deck-size">11</span>
             </div>
-        </div>
+        </section>
 
-        <div id="game-over-screen" class="screen glass-panel hidden">
+        <section
+            id="game-over-screen"
+            class="screen glass-panel game-over-panel"
+            aria-labelledby="win-message"
+            hidden
+        >
             <h1 id="win-message">Game Over</h1>
-            <div id="ai-reveal"></div>
-            <button id="rematch-btn" class="btn primary-btn">Play Again</button>
+            <p id="ai-reveal-label">The AI’s final cards</p>
+            <div id="ai-reveal" aria-labelledby="ai-reveal-label"></div>
+            <button id="rematch-btn" class="btn primary-btn" type="button">Play Again</button>
+        </section>
+
+        <div
+            id="card-modal"
+            class="card-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Enlarged card"
+            hidden
+        >
+            <button id="close-card-modal" class="modal-close" type="button" aria-label="Close card view">
+                ×
+            </button>
+            <img id="modal-img" src="images/card_back.png" alt="">
         </div>
 
-        <!-- Fullscreen Card Overlay -->
-        <div id="card-modal" class="hidden" onclick="this.classList.add('hidden')">
-            <img id="modal-img" src="" />
-        </div>
+        <div id="notice" class="notice" role="status" aria-live="polite" hidden></div>
+    </main>
 
-    </div>
-
-    <script src="config.js"></script>
-    <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
-    <script src="app.js"></script>
+    <script
+        src="https://cdn.socket.io/4.8.3/socket.io.min.js"
+        integrity="sha384-kzavj5fiMwLKzzD1f8S7TeoVIEi7uKHvbTA3ueZkrzYq75pNQUiUi6Dy98Q3fxb0"
+        crossorigin="anonymous"
+        defer
+    ></script>
+    <script src="app.js?v=20260727-3" defer></script>
 </body>
 
 </html>
