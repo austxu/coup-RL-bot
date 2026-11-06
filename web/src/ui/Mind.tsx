@@ -101,7 +101,7 @@ export function MindPanel({ vm }: { vm: MatchVM }) {
     <section class="panel mind" aria-labelledby="mind-h">
       <header class="panel-head">
         <span class="eyebrow" id="mind-h">
-          02 / bot's mind
+          bot's mind
         </span>
         <span class="panel-meta">
           {[...new Set(bots.map((b) => vm.seats[b].model))].join(' vs ')} · lstm 256
@@ -199,7 +199,7 @@ export function Timeline({ vm }: { vm: MatchVM }) {
     <section class="panel timeline" aria-labelledby="tl-h">
       <header class="panel-head">
         <span class="eyebrow" id="tl-h">
-          03 / timeline
+          timeline
         </span>
         <span class="panel-meta">{vm.turn ? `${vm.turn} turns` : ''}</span>
       </header>

@@ -134,7 +134,7 @@ export function Replay({ vm, onClose, onAgain }: { vm: MatchVM; onClose: () => v
       <div class="replay-grid">
         <section class="panel rp-board" aria-label="Board at this decision">
           <header class="panel-head">
-            <span class="eyebrow">board · turn {String(f.turn).padStart(2, '0')}</span>
+            <span class="eyebrow">board · turn {f.turn}</span>
             <span class="panel-meta">deck {f.deck}</span>
           </header>
           {f.seats.map((s, si) => (

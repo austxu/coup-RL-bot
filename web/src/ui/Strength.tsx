@@ -51,7 +51,7 @@ export function StrengthCard() {
     <section class="strength" aria-labelledby="str-h">
       <div class="roles-head">
         <span class="eyebrow" id="str-h">
-          03 / how strong is it
+          how strong is it
         </span>
         <span class="panel-meta">{data.gamesPerOpponent.toLocaleString()} games each</span>
       </div>

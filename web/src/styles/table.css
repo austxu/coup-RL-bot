@@ -112,17 +112,14 @@
   transition: border-color 0.35s, background 0.35s, box-shadow 0.35s, opacity 0.4s;
 }
 .seat.is-active {
-  border-color: rgba(158, 119, 237, 0.35);
-  background: linear-gradient(180deg, rgba(158, 119, 237, 0.06), rgba(158, 119, 237, 0.015));
-  box-shadow: 0 0 0 4px rgba(158, 119, 237, 0.05), 0 18px 50px -30px rgba(158, 119, 237, 0.55);
+  background: rgba(255, 255, 255, 0.025);
 }
 .seat.is-out .hand,
 .seat.is-out .seat-name {
   opacity: 0.6;
 }
 .seat.is-winner {
-  border-color: rgba(126, 231, 135, 0.35);
-  background: linear-gradient(180deg, rgba(126, 231, 135, 0.06), transparent);
+  background: rgba(126, 231, 135, 0.04);
 }
 
 .seat-info {
@@ -167,31 +164,34 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.you-tag {
-  font-family: var(--mono);
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--muted);
-  border: 1px solid var(--border-strong);
-  border-radius: 5px;
-  padding: 0 4px;
-}
 .turn-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-family: var(--mono);
-  font-size: 10.5px;
-  font-weight: 500;
-  color: var(--accent);
-  padding: 2px 7px;
-  border-radius: 999px;
-  background: rgba(158, 119, 237, 0.12);
-  border: 1px solid rgba(158, 119, 237, 0.35);
+  font-size: 11px;
+  color: var(--text-2);
   white-space: nowrap;
   animation: fade-in 0.3s var(--ease);
+}
+.turn-pill::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
 }
 .seat-stats {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  align-items: center;
+  gap: 4px 16px;
+}
+.seat-stats .chip {
+  height: auto;
+  padding: 0;
+  border: 0;
+  background: none;
 }
 .chip-num {
   font-weight: 600;
@@ -362,18 +362,14 @@ button.card.is-selectable {
     linear-gradient(135deg, transparent 47.5%, rgba(240, 136, 123, 0.85) 48.5%, rgba(240, 136, 123, 0.85) 51.5%, transparent 52.5%);
   opacity: 0.8;
 }
+/* x-ray: a card the other player can't see is shown face up but slightly veiled */
 .card.is-xray .card-front::after {
-  content: 'hidden';
+  content: '';
   position: absolute;
-  top: 6px;
-  right: 6px;
-  font-family: var(--mono);
-  font-size: 9.5px;
-  padding: 1px 5px;
-  border-radius: 5px;
-  color: var(--text-2);
-  background: rgba(12, 14, 18, 0.78);
-  border: 1px solid var(--border-strong);
+  inset: 0;
+  border-radius: inherit;
+  background: rgba(10, 12, 16, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.16);
 }
 .card-hint {
   position: absolute;
@@ -763,7 +759,7 @@ button.card.is-selectable {
 }
 .dock-prompt {
   border-color: rgba(158, 119, 237, 0.4);
-  background: linear-gradient(180deg, rgba(158, 119, 237, 0.07), rgba(19, 22, 27, 0.75));
+  background: rgba(19, 22, 27, 0.8);
   animation: dock-in 0.3s var(--ease);
 }
 @keyframes dock-in {

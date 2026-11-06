@@ -1,6 +1,7 @@
 /* Belief panel ("reading your hand"), replay belief heatmap, lobby opponent picker. */
 
 .belief {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -86,24 +87,31 @@
   color: var(--text);
 }
 .btop {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px 10px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: baseline;
+  gap: 3px 12px;
   font-size: 12px;
+}
+.btop .eyebrow {
+  grid-row: span 2;
 }
 .btop-hand {
   display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0 4px;
+  min-width: 0;
 }
+
 .btop-card {
-  padding: 1px 6px;
-  border-radius: 5px;
-  border: 1px solid color-mix(in srgb, var(--role) 45%, transparent);
-  background: color-mix(in srgb, var(--role) 12%, transparent);
   color: var(--text);
-  font-size: 11.5px;
+  font-size: 12px;
+}
+.btop-card + .btop-card::before {
+  content: '+';
+  margin-right: 4px;
+  color: var(--muted);
 }
 .btop-p {
   font-family: var(--mono);
@@ -208,8 +216,8 @@
   border-color: var(--border-strong);
 }
 .opp.is-on {
-  border-color: rgba(158, 119, 237, 0.55);
-  background: rgba(158, 119, 237, 0.07);
+  border-color: var(--text-2);
+  background: rgba(255, 255, 255, 0.03);
 }
 .opp input {
   position: absolute;
@@ -229,12 +237,9 @@
 }
 .opp-tag {
   font-family: var(--mono);
-  font-weight: 500;
-  font-size: 10px;
-  padding: 1px 6px;
-  border-radius: 99px;
-  color: var(--accent);
-  border: 1px solid rgba(158, 119, 237, 0.4);
+  font-weight: 400;
+  font-size: 11px;
+  color: var(--muted);
 }
 .opp-sub {
   font-size: 12px;
@@ -249,6 +254,22 @@
   .brow {
     grid-template-columns: 94px minmax(0, 1fr) 34px 26px 12px;
     gap: 5px;
+  }
+}
+/* narrow side panel (small embeds): drop the delta column so the bars keep their width */
+@container (max-width: 300px) {
+  .brow {
+    grid-template-columns: 90px minmax(0, 1fr) 34px 14px;
+    gap: 6px;
+  }
+  .brow-delta {
+    display: none;
+  }
+  .btop {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .btop .eyebrow {
+    grid-row: auto;
   }
 }
 @media (prefers-reduced-motion: reduce) {

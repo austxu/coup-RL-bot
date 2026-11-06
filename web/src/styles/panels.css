@@ -72,7 +72,7 @@
   position: absolute;
   inset: 0 auto 0 0;
   border-radius: inherit;
-  background: linear-gradient(90deg, #6e4fc9, var(--accent));
+  background: var(--text-2);
   transition: width 0.8s var(--ease);
 }
 .meter-mid {
@@ -192,8 +192,9 @@
   animation-delay: 0.16s;
 }
 .bar.is-chosen {
-  border-color: rgba(158, 119, 237, 0.45);
-  background: rgba(158, 119, 237, 0.08);
+  border-radius: 0 8px 8px 0;
+  background: rgba(255, 255, 255, 0.035);
+  box-shadow: inset 2px 0 0 var(--accent);
 }
 .bar-label {
   display: inline-flex;
@@ -212,11 +213,7 @@
 .bar-chosen {
   display: inline-grid;
   place-items: center;
-  width: 16px;
-  height: 16px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #0c0e12;
+  color: var(--accent);
   flex: none;
 }
 .bar-track {
@@ -234,8 +231,7 @@
   animation: grow 0.6s var(--ease) both;
 }
 .bar.is-chosen .bar-fill {
-  background: var(--role, var(--accent));
-  box-shadow: 0 0 10px color-mix(in srgb, var(--role, var(--accent)) 60%, transparent);
+  background: var(--role, var(--text));
 }
 @keyframes grow {
   from {

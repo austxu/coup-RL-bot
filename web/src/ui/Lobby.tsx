@@ -85,12 +85,11 @@ export function Lobby({
             <strong>PPO-AI</strong>
           </span>
         </div>
-        <span class="eyebrow">01 / coup · reinforcement learning</span>
         <h1 class="lobby-h">Read the bluff.</h1>
         <p class="lobby-lede">
-          A 1v1 Coup bot trained with PPO and an LSTM memory in a league against every earlier version of itself —
-          {GEN7_GAMES} games on one desktop CPU. It learns to guess your hidden cards as it plays, and runs entirely in your
-          browser: 1.3&nbsp;MB of weights, no server, no waiting.
+          A Coup bot trained by reinforcement learning: {GEN7_GAMES} games in a league against every earlier version of
+          itself. It guesses your hidden cards as it plays and runs entirely in your browser, on 1.3&nbsp;MB of weights with
+          no server.
         </p>
 
         <form class="lobby-form" onSubmit={submit}>
@@ -145,7 +144,7 @@ export function Lobby({
         <section class="lobby-roles" aria-labelledby="roles-h">
           <div class="roles-head">
             <span class="eyebrow" id="roles-h">
-              02 / the court
+              the court
             </span>
             <button type="button" class="link-btn" onClick={onRules}>
               <Icon name="help" size={14} /> full rules

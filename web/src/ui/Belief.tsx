@@ -144,7 +144,7 @@ export function BeliefStrip({ vm, cursorTurn, cursorN }: { vm: MatchVM; cursorTu
         ))}
       </div>
       <span class="bstrip-cap">
-        brighter = more confident · ● = actually held then · turn {String(cursorTurn).padStart(2, '0')}
+        brighter = more confident · ● = actually held then · turn {cursorTurn}
       </span>
     </div>
   );

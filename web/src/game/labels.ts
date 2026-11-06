@@ -156,4 +156,3 @@ export function optionRole(req: ReqType, idx: number): Card | null {
 }
 
 export const pct = (p: number) => `${Math.round(p * 100)}%`;
-export const pad2 = (n: number) => String(n).padStart(2, '0');

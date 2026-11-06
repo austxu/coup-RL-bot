@@ -95,7 +95,7 @@ function PromptBody({ match, vm, prompt }: { match: Match; vm: MatchVM; prompt: 
     return (
       <>
         <div class="dock-head">
-          <span class="eyebrow">01 / your move</span>
+          <span class="eyebrow">your move</span>
           <h2 id="dock-q" class="dock-q" tabIndex={-1}>
             {forced ? 'Ten coins: you must launch a Coup.' : 'Choose an action'}
           </h2>
@@ -166,7 +166,7 @@ function PromptBody({ match, vm, prompt }: { match: Match; vm: MatchVM; prompt: 
     return (
       <>
         <div class="dock-head">
-          <span class="eyebrow">01 / your call</span>
+          <span class="eyebrow">your call</span>
           <h2 id="dock-q" class="dock-q">
             {claimer.name} claims <span class={`role-word ${ROLE_CLASS[prompt.card]}`}>{prompt.card}</span>
             {isBlock ? ' to block you' : ''}. Challenge?
@@ -211,7 +211,7 @@ function PromptBody({ match, vm, prompt }: { match: Match; vm: MatchVM; prompt: 
     return (
       <>
         <div class="dock-head">
-          <span class="eyebrow">01 / your call</span>
+          <span class="eyebrow">your call</span>
           <h2 id="dock-q" class="dock-q">
             {actor.name} {what}. Block?
           </h2>
@@ -255,7 +255,7 @@ function PromptBody({ match, vm, prompt }: { match: Match; vm: MatchVM; prompt: 
     return (
       <>
         <div class="dock-head">
-          <span class="eyebrow">01 / lose an influence</span>
+          <span class="eyebrow">lose an influence</span>
           <h2 id="dock-q" class="dock-q">Choose a card to reveal</h2>
           <span class="dock-sub">It stays face-up for the rest of the game. Keep the one you'll want to claim.</span>
         </div>
@@ -377,7 +377,7 @@ function ExchangePicker({ match, prompt }: { match: Match; prompt: Extract<Promp
   return (
     <div class="exchange">
       <div class="dock-head">
-        <span class="eyebrow">01 / exchange</span>
+        <span class="eyebrow">exchange</span>
         <h2 id="dock-q" class="dock-q">
           Keep {prompt.keep} of {prompt.all.length}
         </h2>

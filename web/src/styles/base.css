@@ -170,12 +170,10 @@ ol {
   border-color: var(--accent);
   color: #0c0e12;
   font-weight: 600;
-  box-shadow: 0 0 0 0 rgba(158, 119, 237, 0);
 }
 .btn-primary:hover:not(:disabled) {
   background: #b293f2;
   border-color: #b293f2;
-  box-shadow: 0 6px 24px -8px rgba(158, 119, 237, 0.6);
 }
 .btn-primary .kbd {
   background: rgba(12, 14, 18, 0.14);
@@ -602,21 +600,16 @@ ol {
 }
 .role-grid {
   display: grid;
-  gap: 10px;
 }
 .role-tile {
   display: grid;
   grid-template-columns: 56px 1fr;
-  gap: 14px;
+  gap: 16px;
   align-items: center;
-  padding: 8px 12px 8px 8px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: linear-gradient(90deg, color-mix(in srgb, var(--role) 7%, transparent), transparent 60%);
-  transition: border-color 0.2s;
+  padding: 10px 0;
 }
-.role-tile:hover {
-  border-color: color-mix(in srgb, var(--role) 45%, var(--border));
+.role-tile + .role-tile {
+  border-top: 1px solid var(--border);
 }
 .role-tile .card {
   --card-h: 78px;

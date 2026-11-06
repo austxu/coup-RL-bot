@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'preact/hooks';
 import type { Match, MatchVM, SeatVM, Callout } from '../game/match';
-import { ART, ROLE_CLASS, pad2, pct } from '../game/labels';
+import { ART, ROLE_CLASS, pct } from '../game/labels';
 import { CardView } from './CardView';
 import { Icon } from './Icon';
 import { Dock } from './Dock';
@@ -44,7 +44,7 @@ export function Table({ match, vm, embed, onZoom, onAgain, onReplay, onLobby }: 
       <div class="table-spot" aria-hidden="true" />
       <div class="table-bar">
         <span class="eyebrow">
-          {vm.turn > 0 ? `turn ${pad2(vm.turn)}` : 'turn 00'} / {whose || '—'}
+          turn {vm.turn} · {whose || '—'}
         </span>
         {vm.recap ? (
           <span class={`recap ${vm.recap.role ? ROLE_CLASS[vm.recap.role] : ''}`} title="Last action">
@@ -54,7 +54,7 @@ export function Table({ match, vm, embed, onZoom, onAgain, onReplay, onLobby }: 
         ) : (
           <span class="recap recap-empty">
             {vm.mode === 'attract'
-              ? 'Gen5 vs Gen5 · both hands shown'
+              ? 'Gen 7 vs Gen 5 · both hands shown'
               : vm.current !== null
                 ? `New game · ${vm.current === vm.viewer ? 'you move' : `${vm.seats[vm.current].name} moves`} first`
                 : 'Dealing a fresh hand'}
@@ -117,7 +117,6 @@ function Stage({ vm }: { vm: MatchVM }) {
     return (
       <div class={`stage showdown sd-${sd.result} ${ROLE_CLASS[sd.card]}`} key={sd.id} aria-hidden="true">
         <div class="sd-card">
-          <span class="sd-rays" />
           <span class="sd-card-inner">
             <span class="sd-face sd-face-back" />
             <span class="sd-face sd-face-front">
@@ -170,9 +169,7 @@ function Stage({ vm }: { vm: MatchVM }) {
     );
   }
   return (
-    <div class="stage stage-idle" aria-hidden="true">
-      <span class="felt-mark">coup</span>
-    </div>
+    <div class="stage stage-idle" aria-hidden="true" />
   );
 }
 
@@ -225,7 +222,6 @@ function Seat({
           )}
           <span class="seat-name">
             {seat.name}
-            {isViewer && <span class="you-tag">you</span>}
           </span>
           {active && !seat.eliminated && <span class="turn-pill">{isViewer ? 'your turn' : 'to act'}</span>}
         </div>
