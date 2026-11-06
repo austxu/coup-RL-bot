@@ -109,11 +109,12 @@ export function Replay({ vm, onClose, onAgain }: { vm: MatchVM; onClose: () => v
     <div class="replay" ref={rootRef} tabIndex={-1} aria-labelledby="rp-h">
       <header class="replay-head">
         <div>
-          <span class="eyebrow">post-mortem / {frames.length} decisions / {o?.turns ?? 0} turns</span>
           <h1 id="rp-h" class="replay-h">
-            {o?.winner == null ? 'Draw' : o.winner === vm.viewer ? 'You won' : `${vm.seats[o.winner].name} won`} — every
-            card, every bluff
+            {o?.winner == null ? 'Draw' : o.winner === vm.viewer ? 'You won' : `${vm.seats[o.winner].name} won`}
           </h1>
+          <p class="replay-sub">
+            {o?.turns ?? 0} turns, {frames.length} decisions. Every card and every bluff, step by step.
+          </p>
         </div>
         <div class="replay-actions">
           <button type="button" class="btn btn-primary" onClick={onAgain}>
@@ -145,7 +146,7 @@ export function Replay({ vm, onClose, onAgain }: { vm: MatchVM; onClose: () => v
                   <span class="coin coin-sm" aria-hidden="true" /> {s.coins}
                 </span>
                 {s.kind === 'bot' && vm.viewer !== null && (
-                  <span class="tag tag-xray">
+                  <span class="rp-hidden">
                     <Icon name="eye" size={12} /> hidden during play
                   </span>
                 )}
@@ -287,7 +288,7 @@ export function Replay({ vm, onClose, onAgain }: { vm: MatchVM; onClose: () => v
             <span class="eyebrow">jump to a bluff</span>
             {bluffList.map((fr) => (
               <button type="button" class={`chip chip-btn ${ROLE_CLASS[fr.claim!.card]}`} key={fr.n} onClick={() => setI(fr.n)}>
-                t{String(fr.turn).padStart(2, '0')} · {fr.seat === vm.viewer ? 'you' : vm.seats[fr.seat].name} · {fr.claim!.card}
+                turn {fr.turn} · {fr.seat === vm.viewer ? 'you' : vm.seats[fr.seat].name} · {fr.claim!.card}
                 {fr.caught ? ' · caught' : ''}
               </button>
             ))}

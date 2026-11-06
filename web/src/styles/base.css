@@ -299,9 +299,6 @@ ol {
   color: var(--accent);
   border-color: rgba(158, 119, 237, 0.45);
 }
-.tag-xray {
-  color: var(--text-2);
-}
 
 .role-dot {
   display: inline-block;

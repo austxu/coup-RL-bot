@@ -423,18 +423,27 @@
   display: flex;
   gap: 8px;
 }
+.replay-sub {
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--muted);
+}
 .replay-summary {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 4px 28px;
 }
 .replay-summary li {
   font-size: 13px;
   color: var(--text-2);
-  padding: 5px 10px;
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  background: var(--panel);
+}
+.rp-hidden {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
 }
 .replay-grid {
   display: grid;
@@ -450,8 +459,9 @@
   border: 1px solid transparent;
 }
 .rp-seat.is-deciding {
-  border-color: rgba(158, 119, 237, 0.35);
-  background: rgba(158, 119, 237, 0.05);
+  border-radius: 0 12px 12px 0;
+  background: rgba(255, 255, 255, 0.025);
+  box-shadow: inset 2px 0 0 var(--accent);
 }
 .rp-seat-head {
   display: flex;
