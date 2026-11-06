@@ -164,23 +164,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.turn-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-family: var(--mono);
-  font-size: 11px;
-  color: var(--text-2);
-  white-space: nowrap;
-  animation: fade-in 0.3s var(--ease);
-}
-.turn-pill::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-}
 .seat-stats {
   display: flex;
   flex-wrap: wrap;

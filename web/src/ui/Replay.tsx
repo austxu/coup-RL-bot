@@ -113,7 +113,7 @@ export function Replay({ vm, onClose, onAgain }: { vm: MatchVM; onClose: () => v
             {o?.winner == null ? 'Draw' : o.winner === vm.viewer ? 'You won' : `${vm.seats[o.winner].name} won`}
           </h1>
           <p class="replay-sub">
-            {o?.turns ?? 0} turns, {frames.length} decisions. Every card and every bluff, step by step.
+            {o?.turns ?? 0} turns, {frames.length} decisions.
           </p>
         </div>
         <div class="replay-actions">
@@ -266,7 +266,7 @@ export function Replay({ vm, onClose, onAgain }: { vm: MatchVM; onClose: () => v
             label="Bot win estimate across the game"
           />
         )}
-        <BeliefStrip vm={vm} cursorTurn={f.turn} cursorN={beliefIdx} />
+        <BeliefStrip vm={vm} cursorN={beliefIdx} />
           </div>
           <button type="button" class="btn btn-sm" onClick={() => step(1)} aria-label="Next decision">
             <Icon name="arrowRight" />

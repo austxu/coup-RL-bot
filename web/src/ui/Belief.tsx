@@ -68,7 +68,7 @@ export function BeliefBars({
   );
 }
 
-/** "Reading your hand": the latest belief of the (first) Gen7 seat about its opponent. */
+/** "Guessing your hand": the latest belief of the (first) Gen7 seat about its opponent. */
 export function BeliefPanel({ vm }: { vm: MatchVM }) {
   const reader = vm.seats.find((s) => s.kind === 'bot' && s.model === 'gen7');
   if (!reader) {
@@ -76,8 +76,8 @@ export function BeliefPanel({ vm }: { vm: MatchVM }) {
     if (!bot) return null;
     return (
       <div class="belief belief-off">
-        <span class="eyebrow">reading your hand</span>
-        <p class="mind-note">Gen 5 has no belief head. Pick Gen 7 in the lobby to see what the bot thinks you hold.</p>
+        <span class="eyebrow">guessing your hand</span>
+        <p class="mind-note">Only Gen 7 guesses your cards.</p>
       </div>
     );
   }
@@ -92,30 +92,23 @@ export function BeliefPanel({ vm }: { vm: MatchVM }) {
     <div class="belief" aria-live="off">
       <div class="belief-head">
         <span class="eyebrow">
-          {vm.seats.filter((s) => s.kind === 'bot').length > 1 ? `${reader.name} reads ${whose} hand` : `reading ${whose} hand`}
+          {vm.seats.filter((s) => s.kind === 'bot').length > 1 ? `${reader.name} guesses ${whose} hand` : `guessing ${whose} hand`}
         </span>
-        <span class="panel-meta">belief head</span>
       </div>
       {cur ? (
         <>
           <BeliefBars b={cur.b} prev={prev?.b} showTruth={showTruth} truthLabel={you ? 'you hold it' : 'actually held'} />
-          <p class="belief-cap">
-            P({you ? 'you hold' : 'holds'} ≥1) after each of {reader.name === 'PPO-AI' ? 'its' : `${reader.name}'s`} decisions
-            {showTruth ? ` · ● ${you ? 'your cards' : 'true hand'}` : ''}
-          </p>
+          {showTruth && <p class="belief-cap">● {you ? 'your cards' : 'true hand'}</p>}
         </>
       ) : (
-        <p class="mind-note">
-          After its first decision, the bot's guess at {whose} two hidden cards appears here — learned from claims, blocks
-          and challenges, with impossible hands ruled out by card counting.
-        </p>
+        <p class="mind-note">Its guess at {whose} cards appears after its first move. It only sees what you'd see.</p>
       )}
     </div>
   );
 }
 
 /** Replay heatmap: one column per belief update, one row per role; dots mark the true hand at the time. */
-export function BeliefStrip({ vm, cursorTurn, cursorN }: { vm: MatchVM; cursorTurn: number; cursorN: number | null }) {
+export function BeliefStrip({ vm, cursorN }: { vm: MatchVM; cursorN: number | null }) {
   const reader = vm.seats.find((s) => s.kind === 'bot' && s.model === 'gen7');
   if (!reader) return null;
   const series = vm.beliefs.filter((x) => x.seat === reader.idx);
@@ -144,7 +137,7 @@ export function BeliefStrip({ vm, cursorTurn, cursorN }: { vm: MatchVM; cursorTu
         ))}
       </div>
       <span class="bstrip-cap">
-        brighter = more confident · ● = actually held then · turn {cursorTurn}
+        brighter = more confident · ● = actually held
       </span>
     </div>
   );

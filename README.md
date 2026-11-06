@@ -39,9 +39,10 @@ and every scripted baseline head-to-head ([Evaluation](#evaluation)).
 - The **bot's mind** panel shows, after every bot decision, its probability over the
   options it actually had and the critic's win estimate `(v+1)/2` as a sparkline. It
   never shows the bot's hidden cards during play.
-- **Reading your hand** (Gen 7 only) shows the belief head's output after each bot
-  decision: P(you hold at least one) for each role, the change since the last
-  decision, and its two most likely exact hands. Impossible hands are masked out by
+- **Guessing your hand** (Gen 7 only) shows the belief head's output after each bot
+  decision. The bot never sees your cards; it infers them from the public game, and the
+  true hand is only used as a training label. It shows P(you hold at least one) for
+  each role, the change since the last decision, and its two most likely exact hands. Impossible hands are masked out by
   card counting (three copies per role, minus the bot's own cards and everything
   revealed). Your own cards are marked so you can see when it's right.
 - After the game, **Review** steps through every decision with both hands visible,
@@ -218,7 +219,7 @@ how many ways it can be dealt from the unseen cards):
 - **A belief head.** A 20-way softmax over the opponent's possible hidden hands (15
   two-card hands, 5 single cards), trained with cross-entropy against the true hand
   and masked by card counting. It shapes the LSTM state towards what matters and is
-  what the "Reading your hand" panel shows.
+  what the "Guessing your hand" panel shows.
 - **A privileged critic** that also sees the opponent's hand is used only to compute
   advantages during training (lower-variance targets); it is not exported.
 - **A fuller observation** (127 dims): the bot's cards per slot, so it knows *which*

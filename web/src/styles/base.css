@@ -428,9 +428,6 @@ ol {
   font-size: 15px;
   white-space: nowrap;
 }
-.brand-sub {
-  white-space: nowrap;
-}
 .topbar-right {
   display: flex;
   align-items: center;
@@ -501,15 +498,6 @@ ol {
   gap: 14px;
   margin: -8px 0 -4px -10px;
 }
-.lobby-bear-tag {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding-bottom: 18px;
-}
-.lobby-bear-tag strong {
-  font-weight: 600;
-}
 .lobby-h {
   font-size: clamp(36px, 5vw, 56px);
   line-height: 1.02;
@@ -562,11 +550,6 @@ ol {
   border-radius: 50%;
   background: var(--gold);
   animation: pulse 1.4s infinite;
-}
-.status-dot.ready {
-  background: var(--lime);
-  animation: none;
-  box-shadow: 0 0 0 3px rgba(126, 231, 135, 0.15);
 }
 .status-dot.error {
   background: var(--ember);
@@ -758,9 +741,6 @@ ol {
     grid-template-columns: 1fr;
     gap: 32px;
     padding: 28px var(--gutter) 48px;
-  }
-  .brand-sub {
-    display: none;
   }
 }
 @media (max-width: 480px) {

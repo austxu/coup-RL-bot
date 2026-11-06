@@ -55,9 +55,7 @@ export function Table({ match, vm, embed, onZoom, onAgain, onReplay, onLobby }: 
           <span class="recap recap-empty">
             {vm.mode === 'attract'
               ? 'Gen 7 vs Gen 5 · both hands shown'
-              : vm.current !== null
-                ? `New game · ${vm.current === vm.viewer ? 'you move' : `${vm.seats[vm.current].name} moves`} first`
-                : 'Dealing a fresh hand'}
+              : ''}
           </span>
         )}
       </div>
@@ -223,7 +221,6 @@ function Seat({
           <span class="seat-name">
             {seat.name}
           </span>
-          {active && !seat.eliminated && <span class="turn-pill">{isViewer ? 'your turn' : 'to act'}</span>}
         </div>
         <div class="seat-stats">
           <span class="chip chip-coins" data-anchor={`seat-${i}-coins`} title="Coins">

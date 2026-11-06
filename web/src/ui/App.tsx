@@ -131,7 +131,6 @@ export function App({ bot, embed, autoplay }: AppProps) {
               <img src="images/coup-card-favicon-v1-180.png" alt="" />
             </span>
             <span class="brand-name">Coup RL Bot</span>
-            <span class="eyebrow brand-sub">{model} · 1v1 · in-browser</span>
           </button>
           <div class="topbar-right">
             <RecordChip record={record} />

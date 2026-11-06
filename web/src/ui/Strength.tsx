@@ -53,7 +53,7 @@ export function StrengthCard() {
         <span class="eyebrow" id="str-h">
           how strong is it
         </span>
-        <span class="panel-meta">{data.gamesPerOpponent.toLocaleString()} games each</span>
+        <span class="panel-meta">{data.gamesPerOpponent.toLocaleString()} bot-vs-bot games each</span>
       </div>
       <div class="str-legend" aria-hidden="true">
         <span>
@@ -103,8 +103,7 @@ export function StrengthCard() {
       </table>
       {b && (
         <p class="str-note">
-          Belief head names your exact hand <strong>{pct(b.top1)}</strong> of the time (card counting alone:{' '}
-          {pct(b.priorTop1)}). Bot-vs-bot games; humans play differently.
+          Guesses the exact hand <strong>{pct(b.top1)}</strong> of the time; card counting alone gets {pct(b.priorTop1)}.
         </p>
       )}
     </section>

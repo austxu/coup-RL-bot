@@ -11,6 +11,7 @@ import { StrengthCard } from './Strength';
 
 export function RecordChip({ record, onReset }: { record: PlayerRecord; onReset?: () => void }) {
   const games = record.wins + record.losses;
+  if (games === 0) return null;
   return (
     <span class="record" aria-label={`Record: ${record.wins} wins, ${record.losses} losses`}>
       <span class="rec-w">{record.wins}W</span>
@@ -21,7 +22,7 @@ export function RecordChip({ record, onReset }: { record: PlayerRecord; onReset?
           {record.streak > 0 ? `${record.streak} win streak` : `${-record.streak} loss${record.streak < -1 ? 'es' : ''} in a row`}
         </span>
       )}
-      {onReset && games > 0 && (
+      {onReset && (
         <button type="button" class="link-btn" onClick={onReset}>
           reset
         </button>
@@ -34,8 +35,8 @@ export function RecordChip({ record, onReset }: { record: PlayerRecord; onReset?
 const GEN7_GAMES = '12 million';
 
 const OPPONENTS: { id: ModelId; name: string; tag?: string; sub: string }[] = [
-  { id: 'gen7', name: 'Gen 7', tag: 'strongest', sub: 'League-trained against every earlier bot; reads your hand' },
-  { id: 'gen5', name: 'Gen 5', sub: 'The previous bot: 3.5M games, mostly self-play' },
+  { id: 'gen7', name: 'Gen 7', tag: 'strongest', sub: 'Guesses your hand' },
+  { id: 'gen5', name: 'Gen 5', sub: 'The previous bot' },
 ];
 
 export function Lobby({
@@ -80,16 +81,11 @@ export function Lobby({
       <section class="lobby-hero">
         <div class="lobby-bear">
           <Bear base="idle" react="wave" reactKey={1} size={embed ? 120 : 208} label="PPO-AI, a pixel-art bear, waves hello" />
-          <span class="lobby-bear-tag">
-            <span class="eyebrow">your opponent</span>
-            <strong>PPO-AI</strong>
-          </span>
         </div>
         <h1 class="lobby-h">Read the bluff.</h1>
         <p class="lobby-lede">
-          A Coup bot trained by reinforcement learning: {GEN7_GAMES} games in a league against every earlier version of
-          itself. It guesses your hidden cards as it plays and runs entirely in your browser, on 1.3&nbsp;MB of weights with
-          no server.
+          A Coup bot trained by reinforcement learning on {GEN7_GAMES} games. It guesses your hidden cards as it plays,
+          and runs entirely in your browser.
         </p>
 
         <form class="lobby-form" onSubmit={submit}>
@@ -127,17 +123,19 @@ export function Lobby({
           </button>
         </form>
         <p class="lobby-status" role="status">
-          <span class={`status-dot ${ready ? 'ready' : st.status === 'error' ? 'error' : 'loading'}`} aria-hidden="true" />
-          {ready
-            ? `${m === 'gen7' ? 'Gen 7' : 'Gen 5'} loaded in ${st.loadMs} ms · inference runs in a Web Worker`
-            : st.status === 'error'
-              ? `Could not load the model: ${st.error}`
-              : 'Loading the model…'}
+          {!ready && (
+            <>
+              <span class={`status-dot ${st.status === 'error' ? 'error' : 'loading'}`} aria-hidden="true" />
+              {st.status === 'error' ? `Could not load the model: ${st.error}` : 'Loading the model…'}
+            </>
+          )}
         </p>
-        <div class="lobby-record">
-          <RecordChip record={record} onReset={onResetRecord} />
-          {record.best > 1 && <span class="rec-best">best streak {record.best}</span>}
-        </div>
+        {record.wins + record.losses > 0 && (
+          <div class="lobby-record">
+            <RecordChip record={record} onReset={onResetRecord} />
+            {record.best > 1 && <span class="rec-best">best streak {record.best}</span>}
+          </div>
+        )}
       </section>
 
       {!embed && (
@@ -226,10 +224,9 @@ export function RulesBody() {
       </ul>
       <h3>How the bot works</h3>
       <p>
-        A 70-number observation (your public state, its own cards, claims, caught bluffs and the last five actions) feeds
-        two dense layers and a 256-unit LSTM that remembers the whole game. An actor head picks a move by sampling from its
-        policy; a critic head estimates its chance to win. The TypeScript port is checked against the original PyTorch
-        model on recorded games.
+        It sees what you would see from its seat: its own cards, coins, face-up cards, claims and recent moves. An LSTM
+        remembers the whole game; one head picks a move, another estimates its chance to win, and Gen 7 has a third that
+        guesses your two hidden cards. It never sees them.
       </p>
     </div>
   );

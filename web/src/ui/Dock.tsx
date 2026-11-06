@@ -23,7 +23,6 @@ export function Dock({ match, vm, embed }: { match: Match; vm: MatchVM; embed: b
     const thinking = vm.seats.find((s) => s.thinking);
     return (
       <div class="dock dock-status" ref={ref}>
-        <span class="eyebrow">{vm.mode === 'attract' ? 'live / self-play' : 'waiting'}</span>
         <p class="dock-line">
           {thinking ? (
             <>
@@ -33,7 +32,7 @@ export function Dock({ match, vm, embed }: { match: Match; vm: MatchVM; embed: b
           ) : vm.phase === 'dealing' ? (
             'Shuffling the court deck and dealing two influence each…'
           ) : vm.mode === 'attract' ? (
-            'Two copies of the Gen5 bot play each other. Bluffs are tagged as they happen.'
+            'Gen 7 plays Gen 5.'
           ) : vm.showdown ? (
             'Resolving the challenge…'
           ) : (
@@ -95,15 +94,9 @@ function PromptBody({ match, vm, prompt }: { match: Match; vm: MatchVM; prompt: 
     return (
       <>
         <div class="dock-head">
-          <span class="eyebrow">your move</span>
           <h2 id="dock-q" class="dock-q" tabIndex={-1}>
-            {forced ? 'Ten coins: you must launch a Coup.' : 'Choose an action'}
+            {forced ? 'Ten coins: you must Coup.' : 'Choose an action'}
           </h2>
-          <span class="dock-sub">
-            {forced
-              ? 'At 10 or more coins, Coup is the only legal action.'
-              : 'Character actions are claims — bluffing is allowed, and can be challenged.'}
-          </span>
         </div>
         <div class="actions">
           {ACTIONS.map((a) => {
@@ -166,7 +159,6 @@ function PromptBody({ match, vm, prompt }: { match: Match; vm: MatchVM; prompt: 
     return (
       <>
         <div class="dock-head">
-          <span class="eyebrow">your call</span>
           <h2 id="dock-q" class="dock-q">
             {claimer.name} claims <span class={`role-word ${ROLE_CLASS[prompt.card]}`}>{prompt.card}</span>
             {isBlock ? ' to block you' : ''}. Challenge?
@@ -211,11 +203,9 @@ function PromptBody({ match, vm, prompt }: { match: Match; vm: MatchVM; prompt: 
     return (
       <>
         <div class="dock-head">
-          <span class="eyebrow">your call</span>
           <h2 id="dock-q" class="dock-q">
             {actor.name} {what}. Block?
           </h2>
-          <span class="dock-sub">A block is a claim too — {actor.name} may challenge it.</span>
         </div>
         <div class="choices">
           {prompt.cards.map((c, n) => {
@@ -255,9 +245,7 @@ function PromptBody({ match, vm, prompt }: { match: Match; vm: MatchVM; prompt: 
     return (
       <>
         <div class="dock-head">
-          <span class="eyebrow">lose an influence</span>
-          <h2 id="dock-q" class="dock-q">Choose a card to reveal</h2>
-          <span class="dock-sub">It stays face-up for the rest of the game. Keep the one you'll want to claim.</span>
+          <h2 id="dock-q" class="dock-q">You lose an influence. Choose a card to reveal</h2>
         </div>
         <div class="choices">
           {alive.map((s, n) => (

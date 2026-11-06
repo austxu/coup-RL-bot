@@ -103,9 +103,6 @@ export function MindPanel({ vm }: { vm: MatchVM }) {
         <span class="eyebrow" id="mind-h">
           bot's mind
         </span>
-        <span class="panel-meta">
-          {[...new Set(bots.map((b) => vm.seats[b].model))].join(' vs ')} · lstm 256
-        </span>
       </header>
 
       <div class="winest">
@@ -116,7 +113,7 @@ export function MindPanel({ vm }: { vm: MatchVM }) {
                 {lv ? pct((lv.v + 1) / 2) : '—'}
               </span>
               <span class="winest-label">
-                {vm.seats[primary].name}'s own win estimate
+                win chance, by its own estimate
                 {lv && vm.values.filter((v) => v.seat === primary).length > 1 && (
                   <span class={`delta ${delta >= 0 ? 'up' : 'down'}`}>
                     {delta >= 0 ? '+' : '−'}
@@ -154,9 +151,6 @@ export function MindPanel({ vm }: { vm: MatchVM }) {
               : 'No decisions yet'
           }
         />
-        <span class="spark-caption">
-          critic value (v+1)/2 after each decision · dashed line = 50%
-        </span>
       </div>
 
       <BeliefPanel vm={vm} />
@@ -173,14 +167,12 @@ export function MindPanel({ vm }: { vm: MatchVM }) {
             <PolicyBars entry={last} />
             {last.sampledBelowTop && (
               <p class="mind-note">
-                <Icon name="spark" size={12} /> Sampled a less likely option — the bot plays a mixed strategy, not argmax.
+                <Icon name="spark" size={12} /> Picked a less likely option: it mixes its play.
               </p>
             )}
           </>
         ) : (
-          <p class="empty">
-            After every bot decision, its probability over the legal options appears here. Hidden cards never do.
-          </p>
+          <p class="empty">Its options and how likely it was to pick each appear after its first move.</p>
         )}
       </div>
     </section>
@@ -201,7 +193,6 @@ export function Timeline({ vm }: { vm: MatchVM }) {
         <span class="eyebrow" id="tl-h">
           timeline
         </span>
-        <span class="panel-meta">{vm.turn ? `${vm.turn} turns` : ''}</span>
       </header>
       <ol
         class="log"
