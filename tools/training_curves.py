@@ -35,12 +35,63 @@ GENERATIONS = [
          obsDim=70, hiddenDim=256, plannedEpisodes=3_500_000,
          opponents="75% self-play snapshot, 15% zoo, 10% heuristic", completeLog=True,
          opponentMix={"selfPlaySnapshot": 0.75, "randomZoo": 0.15, "heuristic": 0.10},
-         note="Adds the last-5-actions history; the bot in this demo."),
+         note="Adds the last-5-actions history; the previous browser bot (still selectable)."),
     dict(id="gen6", label="Gen 6", log="versions/gen6/training_log_gen6.txt", players="2-6",
          obsDim=155, hiddenDim=512, plannedEpisodes=2_000_000,
          opponents="N-player self-play + zoo", completeLog=True,
          note="N-player experiment; win rate is per table (chance is 1/N). Final run only."),
+    dict(id="gen7", label="Gen 7", log="versions/gen7/training_log_gen7.jsonl", players="2",
+         obsDim=127, hiddenDim=256, plannedEpisodes=None,
+         opponents="League: self-play, frozen Gen 7 snapshots, Gen 1-5, CFR, heuristic, zoo, random "
+                   "(prioritised fictitious self-play)", completeLog=True,
+         note="Belief head + privileged critic; batched greenlet rollouts. The bot in this demo. "
+              "winRate excludes mirror (self-play) games; episodes count learner episodes "
+              "(a self-play game gives two)."),
 ]
+GEN7_FIXED = ["gen1", "gen2", "gen3", "gen4", "gen5", "cfr", "heuristic", "zoo", "random"]
+
+
+def parse_gen7(path):
+    """Rows (episode, winRate, avgLen, entropy, seconds) + per-opponent rows from the Gen 7 JSONL log."""
+    by_it = {}
+    with open(path) as f:
+        for line in f:
+            if line.strip():
+                r = json.loads(line)
+                by_it[r["it"]] = r  # a resumed run rewrites a few iterations: keep the newest
+    rows, opp = [], {k: [] for k in GEN7_FIXED + ["snapshots"]}
+    prev_ep = 0
+    for it in sorted(by_it):
+        r = by_it[it]
+        res = r["results"]
+        w = sum(v[0] for v in res.values())
+        n = sum(v[1] for v in res.values())
+        eps = r["episodes"] - prev_ep
+        prev_ep = r["episodes"]
+        rows.append((r["episodes"], round(100 * w / max(n, 1), 2), round(r["steps"] / max(eps, 1), 2),
+                     round(r["stats"]["ent"], 3), r["hours"] * 3600))
+        for k in GEN7_FIXED:
+            if k in res and res[k][1]:
+                opp[k].append((r["episodes"], 100 * res[k][0] / res[k][1], res[k][1]))
+        snaps = [v for k, v in res.items() if k.endswith(".pt")]
+        if snaps:
+            opp["snapshots"].append((r["episodes"], 100 * sum(v[0] for v in snaps) / sum(v[1] for v in snaps),
+                                     sum(v[1] for v in snaps)))
+    return rows, opp, by_it[max(by_it)]
+
+
+def downsample_weighted(rows, n):
+    """(episode, win%, games) rows -> ~n points of [episode, games-weighted win%]."""
+    if not rows:
+        return []
+    size = max(1, len(rows) / n)
+    out, b = [], 0
+    while int(b * size) < len(rows):
+        chunk = rows[int(b * size):int((b + 1) * size)]
+        g = sum(c[2] for c in chunk)
+        out.append([chunk[-1][0], round(sum(c[1] * c[2] for c in chunk) / g, 2)])
+        b += 1
+    return out
 
 
 def parse(path):
@@ -81,7 +132,14 @@ def main():
     gens = []
     for g in GENERATIONS:
         g = dict(g)
-        rows = parse(os.path.join(ROOT, g["log"])) if g["log"] else []
+        if g["id"] == "gen7":
+            rows, opp, last = parse_gen7(os.path.join(ROOT, g["log"]))
+            g["opponentCurves"] = {k: downsample_weighted(v, 120) for k, v in opp.items()}
+            g["gamesPlayed"] = last["games"]
+            g["iterations"] = last["it"]
+            g["plannedEpisodes"] = last["episodes"]
+        else:
+            rows = parse(os.path.join(ROOT, g["log"])) if g["log"] else []
         g["loggedEpisodes"] = rows[-1][0] if rows else None
         g["rawPoints"] = len(rows)
         g["finalWinRate"] = round(sum(r[1] for r in rows[-50:]) / len(rows[-50:]), 2) if rows else None
@@ -92,13 +150,15 @@ def main():
         gens.append(g)
 
     g5 = next(g for g in gens if g["id"] == "gen5")
+    g7 = next(g for g in gens if g["id"] == "gen7")
+    cfg = json.loads(open(os.path.join(ROOT, "versions/gen7/training_log_gen7.txt")).readline().split(": ", 1)[1])
     payload = {
         "version": 1,
         "description": "PPO training win rate per generation, parsed from the raw training logs.",
         "metric": "winRate is the % of games won in each logged rollout batch against that generation's "
                   "training-opponent mix (bin-averaged). Self-play generations hover near 50% by design.",
         "columns": ["episode", "winRate", "avgLen", "entropy"],
-        "deployed": "gen5",
+        "deployed": "gen7",
         "gen5Training": {
             "episodes": g5["loggedEpisodes"],
             "wallClockHours": g5["wallClockHours"],
@@ -107,6 +167,22 @@ def main():
             "source": "coup/train_gen5.py (SelfPlayZoo), versions/gen5/training_log_gen5.txt",
             "selfPlaySnapshotEveryEpisodes": 2000,
             "episodesPerPpoUpdate": 200,
+        },
+        "gen7Training": {
+            "episodes": g7["loggedEpisodes"],
+            "games": g7["gamesPlayed"],
+            "ppoUpdates": g7["iterations"],
+            "wallClockHours": g7["wallClockHours"],
+            "device": "cpu",
+            "gamesPerUpdate": cfg["games"],
+            "opponentMix": {"selfPlay": cfg["p_mirror"], "gen7Snapshots": cfg["p_snap"],
+                            "fixedPool": round(1 - cfg["p_mirror"] - cfg["p_snap"], 2)},
+            "fixedPool": GEN7_FIXED,
+            "prioritisation": "fixed-pool and snapshot opponents weighted by (1 - learner win rate)^2 + 0.02",
+            "snapshotEveryUpdates": cfg["snap_every"],
+            "source": "coup/train_gen7.py, versions/gen7/training_log_gen7.jsonl",
+            "opponentCurvesNote": "opponentCurves: learner win % per opponent during training, games-weighted "
+                                  "bins of [episode, win%]; sampling follows the prioritised mix.",
         },
         "generations": gens,
     }

@@ -23,6 +23,16 @@ export function summaryLines(vm: MatchVM): string[] {
         `${name(i)} challenged ${s.challenges} time${s.challenges === 1 ? '' : 's'}, right ${s.challengesWon}.`,
       );
   });
+  // Gen 7's belief head: how often its single most likely hand was exactly right
+  const reader = vm.seats.find((s) => s.kind === 'bot' && s.model === 'gen7');
+  const reads = reader ? vm.beliefs.filter((b) => b.seat === reader.idx) : [];
+  if (reader && reads.length) {
+    const key = (cs: string[]) => [...cs].sort().join('+');
+    const hits = reads.filter((b) => b.b.top[0] && key(b.b.top[0].cards) === key(b.b.truth)).length;
+    lines.push(
+      `${name(reader.idx)}'s top guess at ${other(reader.idx) === 'you' ? 'your' : `${other(reader.idx)}'s`} hand was exactly right ${hits} of ${reads.length} time${reads.length === 1 ? '' : 's'}.`,
+    );
+  }
   return lines;
 }
 

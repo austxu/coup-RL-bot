@@ -1,13 +1,13 @@
 {
  "format": "coup-lstm-ppo/1",
  "model": "gen7",
- "source": "gen7_ckpt.pt",
+ "source": "gen7_final.pt",
  "inputDim": 127,
  "hiddenDim": 256,
  "numActions": 15,
  "numBelief": 20,
  "byteLength": 1273488,
- "sha256": "5062cfe8fa7304f9f54aca7870e90fb6cc04c97197406b7b6e7bd91dd9241e98",
+ "sha256": "a3c189fa5909d2a0a05115a617083cfc0fa71e0aced32753df977566c65c7d42",
  "tensors": [
   {
    "name": "fc1.weight",
