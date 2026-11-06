@@ -451,18 +451,6 @@ ol {
 .rec-sep {
   color: var(--border-strong);
 }
-.rec-streak {
-  font-family: var(--mono);
-  font-size: 11px;
-  padding: 2px 7px;
-  border-radius: 999px;
-  border: 1px solid var(--border-strong);
-  color: var(--muted);
-}
-.rec-streak.up {
-  color: var(--lime);
-  border-color: rgba(126, 231, 135, 0.35);
-}
 .rec-best {
   font-family: var(--mono);
   font-size: 11px;
@@ -747,9 +735,6 @@ ol {
   .topbar {
     padding: 0 12px;
     gap: 8px;
-  }
-  .topbar .record .rec-streak {
-    display: none;
   }
 }
 @media (max-width: 400px) {

@@ -163,10 +163,6 @@ function PromptBody({ match, vm, prompt }: { match: Match; vm: MatchVM; prompt: 
             {claimer.name} claims <span class={`role-word ${ROLE_CLASS[prompt.card]}`}>{prompt.card}</span>
             {isBlock ? ' to block you' : ''}. Challenge?
           </h2>
-          <span class="dock-sub">
-            If they hold it, you lose an influence. If it's a bluff, they lose one
-            {isBlock ? ' and your action goes through' : ' and the action fails'}.
-          </span>
         </div>
         <div class="choices">
           <button type="button" class="btn btn-danger" data-primary onClick={() => match.answer(true)} aria-keyshortcuts="C">
@@ -365,11 +361,9 @@ function ExchangePicker({ match, prompt }: { match: Match; prompt: Extract<Promp
   return (
     <div class="exchange">
       <div class="dock-head">
-        <span class="eyebrow">exchange</span>
         <h2 id="dock-q" class="dock-q">
           Keep {prompt.keep} of {prompt.all.length}
         </h2>
-        <span class="dock-sub">Click or drag cards between the rows. The rest go back into the deck.</span>
       </div>
       <div class="ex-rows">
         <div class="ex-row ex-keep" ref={keepRow}>

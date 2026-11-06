@@ -297,9 +297,10 @@
   box-shadow: 0 0 0 1px var(--ember), 0 0 30px -4px rgba(240, 136, 123, 0.7);
 }
 
-/* ---------- sound toggle ---------- */
+/* ---------- sound and stats toggles ---------- */
 
-.btn-icon.is-on {
+.btn-icon.is-on,
+.stats-toggle.is-on {
   color: var(--accent);
   border-color: rgba(158, 119, 237, 0.45);
 }

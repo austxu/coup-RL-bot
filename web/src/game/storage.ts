@@ -78,3 +78,21 @@ export function saveModel(m: ModelId) {
     /* private mode */
   }
 }
+
+const SIDE_KEY = 'coup.stats';
+
+export function loadShowStats(): boolean {
+  try {
+    return localStorage.getItem(SIDE_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+export function saveShowStats(on: boolean) {
+  try {
+    localStorage.setItem(SIDE_KEY, on ? '1' : '0');
+  } catch {
+    /* private mode */
+  }
+}

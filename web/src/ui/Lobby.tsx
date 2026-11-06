@@ -17,11 +17,6 @@ export function RecordChip({ record, onReset }: { record: PlayerRecord; onReset?
       <span class="rec-w">{record.wins}W</span>
       <span class="rec-sep">·</span>
       <span class="rec-l">{record.losses}L</span>
-      {record.streak !== 0 && (
-        <span class={`rec-streak ${record.streak > 0 ? 'up' : 'down'}`}>
-          {record.streak > 0 ? `${record.streak} win streak` : `${-record.streak} loss${record.streak < -1 ? 'es' : ''} in a row`}
-        </span>
-      )}
       {onReset && (
         <button type="button" class="link-btn" onClick={onReset}>
           reset
@@ -34,9 +29,9 @@ export function RecordChip({ record, onReset }: { record: PlayerRecord; onReset?
 // training games behind the shipped Gen 7 checkpoint (versions/gen7/training_log_gen7.txt)
 const GEN7_GAMES = '12 million';
 
-const OPPONENTS: { id: ModelId; name: string; tag?: string; sub: string }[] = [
-  { id: 'gen7', name: 'Gen 7', tag: 'strongest', sub: 'Guesses your hand' },
-  { id: 'gen5', name: 'Gen 5', sub: 'The previous bot' },
+const OPPONENTS: { id: ModelId; name: string; tag: string }[] = [
+  { id: 'gen7', name: 'Gen 7', tag: 'strongest' },
+  { id: 'gen5', name: 'Gen 5', tag: 'older' },
 ];
 
 export function Lobby({
@@ -84,33 +79,31 @@ export function Lobby({
         </div>
         <h1 class="lobby-h">Read the bluff.</h1>
         <p class="lobby-lede">
-          A Coup bot trained by reinforcement learning on {GEN7_GAMES} games. It guesses your hidden cards as it plays,
-          and runs entirely in your browser.
+          A Coup bot trained by reinforcement learning on {GEN7_GAMES} games.
         </p>
 
         <form class="lobby-form" onSubmit={submit}>
           <label class="field">
-            <span class="eyebrow">your name</span>
+            <span class="sr-only">Your name</span>
             <input
               type="text"
               value={n}
               maxLength={24}
               autoComplete="nickname"
               spellcheck={false}
-              placeholder="You"
+              placeholder="Your name"
               onInput={(e) => setN((e.target as HTMLInputElement).value)}
             />
           </label>
           <fieldset class="opp-pick">
-            <legend class="eyebrow">opponent</legend>
+            <legend class="sr-only">Opponent</legend>
             {OPPONENTS.map((o) => (
               <label class={`opp ${m === o.id ? 'is-on' : ''}`} key={o.id}>
                 <input type="radio" name="opp" value={o.id} checked={m === o.id} onChange={() => pick(o.id)} />
                 <span class="opp-name">
                   {o.name}
-                  {o.tag && <span class="opp-tag">{o.tag}</span>}
+                  <span class="opp-tag">{o.tag}</span>
                 </span>
-                <span class="opp-sub">{o.sub}</span>
               </label>
             ))}
           </fieldset>

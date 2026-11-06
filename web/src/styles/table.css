@@ -89,8 +89,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.recap-empty {
-  color: var(--muted);
+.table-bar-end {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.stats-toggle {
+  flex: none;
 }
 @keyframes fade-in {
   from {
@@ -980,17 +986,6 @@ button.card.is-selectable {
 }
 .mini-hand .card {
   --card-h: 84px;
-}
-.gameover-lines {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  font-size: 13.5px;
-  color: var(--text-2);
-}
-.gameover-lines li::before {
-  content: '— ';
-  color: var(--border-strong);
 }
 .gameover-next {
   font-size: 13px;

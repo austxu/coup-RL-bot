@@ -1004,3 +1004,21 @@
     display: none;
   }
 }
+
+/* ---------- bot panels hidden (default while you play) ---------- */
+
+.game.no-side,
+.is-embed .game.no-side {
+  grid-template-columns: minmax(0, 1fr);
+}
+.game.no-side {
+  max-width: 1180px;
+}
+.no-side .chip-est {
+  display: none;
+}
+@media (max-width: 760px) {
+  .table-bar .recap {
+    display: none;
+  }
+}

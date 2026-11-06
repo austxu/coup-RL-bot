@@ -22,9 +22,12 @@ interface TableProps {
   onAgain: () => void;
   onReplay: () => void;
   onLobby: () => void;
+  /** whether the bot's panels are shown; undefined hides the toggle */
+  stats?: boolean;
+  onStats: () => void;
 }
 
-export function Table({ match, vm, embed, onZoom, onAgain, onReplay, onLobby }: TableProps) {
+export function Table({ match, vm, embed, onZoom, onAgain, onReplay, onLobby, stats, onStats }: TableProps) {
   const bottom = vm.viewer ?? 1;
   const top = 1 - bottom;
   const cur = vm.current;
@@ -46,18 +49,25 @@ export function Table({ match, vm, embed, onZoom, onAgain, onReplay, onLobby }: 
         <span class="eyebrow">
           turn {vm.turn} · {whose || '—'}
         </span>
-        {vm.recap ? (
-          <span class={`recap ${vm.recap.role ? ROLE_CLASS[vm.recap.role] : ''}`} title="Last action">
-            <Icon name={vm.recap.icon} size={14} />
-            <span class="recap-text">{vm.recap.text}</span>
-          </span>
-        ) : (
-          <span class="recap recap-empty">
-            {vm.mode === 'attract'
-              ? 'Gen 7 vs Gen 5 · both hands shown'
-              : ''}
-          </span>
-        )}
+        <span class="table-bar-end">
+          {vm.recap && (
+            <span class={`recap ${vm.recap.role ? ROLE_CLASS[vm.recap.role] : ''}`} title="Last action">
+              <Icon name={vm.recap.icon} size={14} />
+              <span class="recap-text">{vm.recap.text}</span>
+            </span>
+          )}
+          {stats !== undefined && (
+            <button
+              type="button"
+              class={`btn btn-sm stats-toggle ${stats ? 'is-on' : ''}`}
+              aria-pressed={stats}
+              title={stats ? "Hide the bot's stats" : "Show the bot's stats"}
+              onClick={onStats}
+            >
+              <Icon name="brain" size={14} /> Stats
+            </button>
+          )}
+        </span>
       </div>
 
       <Seat match={match} vm={vm} seat={vm.seats[top]} pos="top" onZoom={onZoom} />
@@ -83,9 +93,6 @@ export function Table({ match, vm, embed, onZoom, onAgain, onReplay, onLobby }: 
               <span class="coin" style={{ '--x': x, '--y': y } as any} key={i} />
             ))}
           </div>
-          <span class="pile-label">
-            <span class="eyebrow">treasury</span>
-          </span>
         </div>
       </div>
 

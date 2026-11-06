@@ -11,7 +11,6 @@ interface Evaluation {
   gamesPerOpponent: number;
   models?: { id: string; opponents: Row[] }[];
   opponents: Row[];
-  belief?: { pooled: { top1: number; priorTop1: number; logLoss: number; priorLogLoss: number } };
 }
 
 // strongest opponents first; these are the rows worth showing
@@ -46,7 +45,6 @@ export function StrengthCard() {
   const g7 = data.models?.find((m) => m.id === 'gen7')?.opponents ?? data.opponents;
   const g5 = data.models?.find((m) => m.id === 'gen5')?.opponents ?? [];
   const rows = ORDER.map((id) => g7.find((r) => r.id === id)).filter((r): r is Row => !!r);
-  const b = data.belief?.pooled;
   return (
     <section class="strength" aria-labelledby="str-h">
       <div class="roles-head">
@@ -101,11 +99,6 @@ export function StrengthCard() {
           })}
         </tbody>
       </table>
-      {b && (
-        <p class="str-note">
-          Guesses the exact hand <strong>{pct(b.top1)}</strong> of the time; card counting alone gets {pct(b.priorTop1)}.
-        </p>
-      )}
     </section>
   );
 }

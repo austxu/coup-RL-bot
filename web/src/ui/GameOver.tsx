@@ -82,7 +82,6 @@ export function GameOver({
   return (
     <div class={`gameover ${youWon ? 'is-win' : 'is-loss'} ${attract ? 'is-attract' : ''}`} ref={ref} role="dialog" aria-labelledby="go-h" aria-modal="false">
       <div class="gameover-card">
-        <span class="eyebrow">game over / {o.turns} turns</span>
         <h2 id="go-h" class="gameover-h">
           <Icon name="trophy" size={22} /> {headline}
         </h2>
@@ -96,13 +95,8 @@ export function GameOver({
             </div>
           </div>
         )}
-        <ul class="gameover-lines">
-          {summaryLines(vm).map((l) => (
-            <li key={l}>{l}</li>
-          ))}
-        </ul>
         {attract ? (
-          <p class="gameover-next">Next self-play game starting…</p>
+          <p class="gameover-next">Next game starting…</p>
         ) : (
           <div class="choices">
             <button type="button" class="btn btn-primary" data-primary onClick={onAgain}>

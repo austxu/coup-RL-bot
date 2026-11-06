@@ -3,7 +3,18 @@ import type { ComponentChildren } from 'preact';
 import type { BotClient } from '../bot/client';
 import { Match, type Outcome, type SeatConfig } from '../game/match';
 import { useStore } from '../game/store';
-import { applyResult, loadModel, loadName, loadRecord, saveModel, saveName, saveRecord, type PlayerRecord } from '../game/storage';
+import {
+  applyResult,
+  loadModel,
+  loadName,
+  loadRecord,
+  loadShowStats,
+  saveModel,
+  saveName,
+  saveRecord,
+  saveShowStats,
+  type PlayerRecord,
+} from '../game/storage';
 import type { ModelId } from '../bot/protocol';
 import type { Card } from '../engine/types';
 import { ART, ROLE_CLASS } from '../game/labels';
@@ -31,6 +42,7 @@ export function App({ bot, embed, autoplay }: AppProps) {
   const [name, setName] = useState(() => loadName() || '');
   const [model, setModel] = useState<ModelId>(loadModel);
   const [rules, setRules] = useState(false);
+  const [stats, setStats] = useState(loadShowStats);
   const [zoom, setZoom] = useState<Card | null>(null);
   const matchRef = useRef<Match | null>(null);
   const vm = useStore(match?.store);
@@ -121,6 +133,12 @@ export function App({ bot, embed, autoplay }: AppProps) {
   };
 
   const attract = vm?.mode === 'attract';
+  // the bot's panels are opt-in while you play; the self-play demo always shows them
+  const side = attract || stats;
+  const toggleStats = () => {
+    saveShowStats(!stats);
+    setStats(!stats);
+  };
 
   return (
     <div class={`app screen-${screen} ${embed ? 'is-embed' : ''} ${attract ? 'is-attract' : ''}`}>
@@ -169,7 +187,7 @@ export function App({ bot, embed, autoplay }: AppProps) {
         )}
 
         {screen === 'game' && match && vm && (
-          <div class="game">
+          <div class={`game ${side ? '' : 'no-side'}`}>
             <div class="game-table">
               <Table
                 match={match}
@@ -179,13 +197,14 @@ export function App({ bot, embed, autoplay }: AppProps) {
                 onAgain={() => startHuman()}
                 onReplay={() => setScreen('replay')}
                 onLobby={toLobby}
+                stats={attract ? undefined : stats}
+                onStats={toggleStats}
               />
               {attract && (
                 <div class="attract-cta">
                   <span class="live-dot" aria-hidden="true" />
                   <span class="attract-copy">
                     <strong>Live self-play</strong>
-                    <span>Gen 7 vs Gen 5 · hidden cards shown</span>
                   </span>
                   <button type="button" class="btn btn-primary" onClick={() => (embed ? startHuman() : toLobby())}>
                     <Icon name="play" /> Play the bot
@@ -193,10 +212,12 @@ export function App({ bot, embed, autoplay }: AppProps) {
                 </div>
               )}
             </div>
-            <aside class="game-side">
-              <MindPanel vm={vm} />
-              <Timeline vm={vm} />
-            </aside>
+            {side && (
+              <aside class="game-side">
+                <MindPanel vm={vm} />
+                <Timeline vm={vm} />
+              </aside>
+            )}
           </div>
         )}
 
