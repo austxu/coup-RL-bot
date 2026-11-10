@@ -32,7 +32,7 @@ export function Dock({ match, vm, embed }: { match: Match; vm: MatchVM; embed: b
           ) : vm.phase === 'dealing' ? (
             'Shuffling the court deck and dealing two influence each…'
           ) : vm.mode === 'attract' ? (
-            'Gen 7 plays Gen 5.'
+            'Gen 7 plays itself.'
           ) : vm.showdown ? (
             'Resolving the challenge…'
           ) : (

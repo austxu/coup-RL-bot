@@ -57,10 +57,9 @@ export function App({ bot, embed, autoplay }: AppProps) {
 
   const startAttract = () => {
     const seats: SeatConfig[] = [
-      { kind: 'bot', name: 'Gen 7', model: 'gen7' },
-      { kind: 'bot', name: 'Gen 5', model: 'gen5' },
+      { kind: 'bot', name: 'Gen 7 A', model: 'gen7' },
+      { kind: 'bot', name: 'Gen 7 B', model: 'gen7' },
     ];
-    if (Math.random() < 0.5) seats.reverse();
     const m: Match = new Match(
       seats,
       bot,

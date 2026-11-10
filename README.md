@@ -60,7 +60,7 @@ and every scripted baseline head-to-head ([Evaluation](#evaluation)).
 | Param | Effect |
 | --- | --- |
 | `?embed=1` | Hides page chrome; layout fits a ~16:10 iframe (`embed=portfolio` still works). |
-| `?embed=1&autoplay=1` | Attract mode: Gen 7 plays Gen 5 (both hands shown, slowed down) in a loop until the visitor clicks **Play the bot**. |
+| `?embed=1&autoplay=1` | Attract mode: Gen 7 plays itself (both hands shown, slowed down) in a loop until the visitor clicks **Play the bot**. |
 
 ### Keyboard
 
