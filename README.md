@@ -52,7 +52,7 @@ and every scripted baseline head-to-head ([Evaluation](#evaluation)).
   coins tossed on ballistic arcs into stacks, and a showdown spotlight for challenges
   (with a table shake when a bluff is caught). Nothing needs WebGL. Optional sound is
   synthesised with Web Audio; it is off by default and never plays in the embed.
-- PPO-AI's avatar is the Djungelskog pixel bear (`art/djungelskog-pixel`, the author's
+- Teddy, the bot's avatar, is the Djungelskog pixel bear (`art/djungelskog-pixel`, the author's
   own animation frames), packed into one lazy-loaded WebP atlas.
 
 ### URL parameters

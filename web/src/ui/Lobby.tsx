@@ -75,7 +75,7 @@ export function Lobby({
     <div class={`lobby ${embed ? 'lobby-embed' : ''}`}>
       <section class="lobby-hero">
         <div class="lobby-bear">
-          <Bear base="idle" react="wave" reactKey={1} size={embed ? 120 : 208} label="PPO-AI, a pixel-art bear, waves hello" />
+          <Bear base="idle" react="wave" reactKey={1} size={embed ? 120 : 208} label="Teddy, a pixel-art bear, waves hello" />
         </div>
         <h1 class="lobby-h">Read the bluff.</h1>
         <p class="lobby-lede">

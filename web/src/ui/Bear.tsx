@@ -1,4 +1,4 @@
-// PPO-AI's avatar: the user's Djungelskog pixel bear, animated from one atlas.
+// Teddy's avatar: the user's Djungelskog pixel bear, animated from one atlas.
 import { useEffect, useRef, useState } from 'preact/hooks';
 import atlasUrl from '../assets/bear/bear-atlas.webp';
 import { BEAR_CELL, BEAR_FRAMES } from '../game/bearAtlas';

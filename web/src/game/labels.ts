@@ -109,7 +109,7 @@ export const ACTION_PAST: Record<ActionType, string> = {
   Exchange: 'exchanged',
 };
 
-/** "PPO-AI claims Duke → Tax", "You take Income" */
+/** "Teddy claims Duke → Tax", "You take Income" */
 export function declareText(name: string, you: boolean, action: ActionType, claim: Card | null, target: string | null) {
   const verb = you ? '' : 's';
   if (claim) return `${name} claim${verb} ${claim} → ${action}${target ? ` on ${target}` : ''}`;

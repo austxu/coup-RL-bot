@@ -33,7 +33,7 @@ export interface AppProps {
   autoplay: boolean;
 }
 
-const BOT_NAME = 'PPO-AI';
+const BOT_NAME = 'Teddy';
 
 export function App({ bot, embed, autoplay }: AppProps) {
   const [screen, setScreen] = useState<Screen>(autoplay ? 'game' : 'lobby');
