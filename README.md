@@ -38,8 +38,8 @@ the heuristic (91.7%) and the zoo profiles (88.4%). All of these are bot-vs-bot 
 
 <img src="docs/images/strength.webp" alt="Gen 7 win rate against each opponent, with Gen 5 for comparison" width="560">
 
-**Guessing your hand.** Over 499,482 decisions, Teddy's top guess was exactly the
-opponent's hand **46.4%** of the time. Card counting alone, weighting every hand still
+**Guessing your hand.** Over 499,482 decisions in those bot-vs-bot games, Teddy's top
+guess was exactly the opponent's hand **46.4%** of the time. Card counting alone, weighting every hand still
 possible by how many ways it can be dealt, gets **20.4%**. Teddy never sees your cards:
 it guesses from claims, blocks, challenges and revealed cards, and the true hand is used
 only as a training label.
